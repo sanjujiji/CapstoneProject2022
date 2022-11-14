@@ -1,0 +1,28 @@
+.login {
+    width : 100vw;
+    position : absolute;
+    text-align: center;
+    top : 30%
+    
+}
+
+#signInLabel{
+    color : black;
+    font-weight: bold;
+    font-size: x-large;
+}
+
+#signUpLink{
+    font-size: small;
+    position : absolute;
+    top : 72%;
+    left : 41%;
+}
+
+#footer{
+    width : 100vw;
+    position : absolute;
+    bottom : 15%;
+    text-align: center;
+    font-size: small;
+}

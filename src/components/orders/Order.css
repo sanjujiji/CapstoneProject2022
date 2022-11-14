@@ -1,0 +1,33 @@
+#stepper{
+    margin : 5%;
+}
+
+.select{
+    position : absolute;
+    align-items: center;
+}
+
+
+.outerDiv {
+    display : block;
+    text-align: center;
+}
+
+.innerDiv{
+    display : block;
+}
+
+#addressSelect{
+    text-align: left;
+    /* display : block; */
+}
+
+.selectAddr{
+    text-align: left;
+
+}
+
+#addAddress{
+    font-weight: bolder;
+    font-size: large;
+}

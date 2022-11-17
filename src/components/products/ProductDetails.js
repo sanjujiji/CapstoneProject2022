@@ -1,93 +1,122 @@
 //This is being built as part of Capstone project.
 //ProductDetails.js contains all the functionailities with respect to the display of products details
 
-import React , {useState} from 'react';
+import React , {useState,useEffect} from 'react';
 import Header from '../../common/header/Header';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import './Products.css';
-import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import { useDispatch, useSelector } from "react-redux";
+import { dataActions } from '../../common/dataSlice';
+import ProductCategories from '../../common/ProductCategories';
 
-//Below styling is for the grid
-const Item = styled(Paper)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-    ...theme.typography.body2,
-    padding: theme.spacing(1),
-    textAlign: 'center',
-    color: theme.palette.text.secondary,
-  }));
 
 function ProductDetails(props){
     //The below state variable is setup for the toggle button
-    const [alignment, setAlignment] = React.useState(() => ['web','android']);
-    const [sortBy, setSortBy] = React.useState('');
+    const [prodDetails,setProdDetails]  = useState([]);
+    const [quantity, setQuantity]       = useState('');
 
-    const handleChange = (event, newAlignment) => {
-        setAlignment(newAlignment);
-      };
+    const selector = useSelector(state => state.dataSliceReducer);
+    const dispatch = useDispatch();
 
-      const handleSortChange = (event) => {
-        setSortBy(event.target.value);
-      }
+
+    const handleQuantityChange = (event) => {
+        setQuantity(event.target.value);
+        dispatch(dataActions.QUANTITY(event.target.value));
+    }
+
+    
+    //This code is to load the product details
+    useEffect(() => {
+        loadProdDetails();
+    },[]);
+
+    //function to bring the product details from the database
+    const loadProdDetails = () =>{
+        const data = null;
+        const prodId = window.location.href.substring(window.location.href.lastIndexOf("/")+1);
+        let xhrloadProdDetails = new XMLHttpRequest();
+        let prodDetailsNew ;
+        xhrloadProdDetails.addEventListener("readystatechange", function () {
+            if ((xhrloadProdDetails.readyState === 4) && (xhrloadProdDetails.status === 200) ) {
+                prodDetailsNew = JSON.parse(xhrloadProdDetails.responseText);
+                setProdDetails(prodDetailsNew);   
+                sessionStorage.setItem("prodDetails",JSON.stringify(prodDetailsNew));
+                // dispatch(dataActions.PRODDETAILS(prodDetailsNew));
+                // console.log(selector.prodDetails,"after setting");
+            }
+            else if (xhrloadProdDetails.status !== 200) {
+                setProdDetails([]);  
+                // dispatch(dataActions.PRODDETAILS([]));
+            }
+    });
+    console.log(props.baseUrl);
+    xhrloadProdDetails.open("GET", props.baseUrl + "products/"+prodId,true);
+    xhrloadProdDetails.setRequestHeader('Content-type', 'application/json');
+    xhrloadProdDetails.send(data);
+  }
     return(
         <div>
             <header>
                 <Header />
             </header>
             <br></br>
-            <div id = "toggle">
-                <ToggleButtonGroup 
-                    color="primary"
-                    value={alignment}
-                    exclusive
-                    onChange={handleChange}
-                    aria-label="Platform"
-                    >
-                        <ToggleButton value="all">All</ToggleButton>
-                        <ToggleButton value="web">Web</ToggleButton>
-                        <ToggleButton value="android">Android</ToggleButton>
-                        <ToggleButton value="ios">iOS</ToggleButton>
-                </ToggleButtonGroup>
-            </div> {/* end of div id toggle */}
+                <ProductCategories baseUrl={props.baseUrl}/>
             <br></br>
             {/* Below code is for dividing the web page into grids for product display */}
             <div className = "gridMui">
-                <Box sx={{ width: '100%' }}>
-                    <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                        <Grid item xs={6}>
-                            <Item>1</Item>
-                            <Card sx={{ minWidth: 275 }}>
+                <Box sx={{ width: '100%' ,margin:'5%'}}>
+                    <Grid container sx={{mr:10,ml:10}}>
+                        <Grid item >
+                            <Card sx={{ width: 500 , height : 500}}>
                                 <CardContent>
-                                    <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                                    Word of the Day
-                                    </Typography>
-                                    <Typography variant="h5" component="div">
-                                        benevoent
-                                    </Typography>
-                                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                        adjective
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        well meaning and kindly.
-                                        <br />
-                                        {'"a benevolent smile"'}
-                                    </Typography>
+                                    <img src={prodDetails.imageURL} alt = {prodDetails.imageURL} width = "375" height = "375"></img>
                                 </CardContent>
-                                <CardActions>
-                                    <Button size="small">Learn More</Button>
-                                 </CardActions>
-                            </Card>
+                            </Card> 
                         </Grid>
-                        <Grid item xs={6}>
-                            <Item>2</Item>
+                        <Grid item>
+                            <Card sx={{ width: 500 , height : 500}}>
+                                <CardContent>
+                                    <div >
+                                    <div id="firstPart">
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 24 }} gutterBottom>
+                                            <b>{prodDetails.name} </b> 
+                                        </Typography>
+                                        <Box component="span" sx={{ p:0.3,textAlign: 'center',width:180 ,height:22, fontSize:12, border: '1px solid blue',backgroundColor: 'blue' ,color : 'white',borderRadius: 8}}>
+                                            Available Quantity : {prodDetails.availableItems}
+                                        </Box>
+                                    </div>
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            Category: <b>{prodDetails.category}</b>
+                                        </Typography>
+                                        <br></br>
+                                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                                            {prodDetails.description}
+                                        </Typography>
+                                        <br></br>
+                                        <Typography sx={{ fontSize: 24 }} color="red" gutterBottom>
+                                            <span>&#8377;</span>{prodDetails.price}
+                                        </Typography>
+                                        <br></br>
+                                        <TextField
+                                            required
+                                            id="outlined-multiline-flexible"
+                                            label="Enter Quantity"
+                                            value={quantity}
+                                            onChange={handleQuantityChange}
+                                            />
+                                        <br></br> <br></br>
+                                        <Button variant="contained" href="/order">
+                                            Place Order
+                                        </Button>   
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </Grid>
                     </Grid>
                 </Box>

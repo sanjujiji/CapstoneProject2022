@@ -1,7 +1,7 @@
 //This is being built as part of Capstone project.
 //AddOrders.js contains all the functionailities with respect to the product order
 
-import React , {useState} from 'react';
+import React , {useState,useEffect} from 'react';
 import Header from '../../common/header/Header';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
@@ -22,6 +22,8 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
+import { useDispatch, useSelector } from "react-redux";
+import { dataActions } from '../../common/dataSlice';
 
 //Below styling is for the grid
 const Item = styled(Paper)(({ theme }) => ({
@@ -59,6 +61,7 @@ function Order(props){
     const [landmark,setLandmark]            =   useState(""); 
     const [zipCode,setZipCode]              =   useState("");
     const [contactNo, setContactNo]         =   useState("");
+    const [prodDetails,setProdDetails]      =   useState({});
    // const [skipped, setSkipped] = React.useState(new Set());
     // const isStepOptional = (step) => {
     //     return step === 1;
@@ -78,7 +81,15 @@ function Order(props){
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
         // setSkipped(newSkipped);
       };
-    
+      const selector = useSelector(state => state.dataSliceReducer);
+      const dispatch = useDispatch();
+
+      useEffect(() => {
+        var dtls = JSON.parse(sessionStorage.prodDetails);
+        setProdDetails(dtls);
+    },[]);
+      
+      
       const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
       };
@@ -121,21 +132,6 @@ function Order(props){
     }
     
     
-    //   const handleSkip = () => {
-    //     if (!isStepOptional(activeStep)) {
-    //       // You probably want to guard against something like this,
-    //       // it should never occur unless someone's actively trying to break something.
-    //       throw new Error("You can't skip a step that isn't optional.");
-    //     }
-    
-    //     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    //     setSkipped((prevSkipped) => {
-    //       const newSkipped = new Set(prevSkipped.values());
-    //       newSkipped.add(activeStep);
-    //       return newSkipped;
-    //     });
-    //   };
-    
       const handleReset = () => {
         setActiveStep(0);
       };
@@ -144,7 +140,6 @@ function Order(props){
             <header>
                 <Header />
             </header>    
-            <br></br><br></br>
             {/*The below piece of code is for setting up of stepper */}
             <div id="stepper">
                 <Box sx={{ width: '100%' }}>
@@ -172,34 +167,45 @@ function Order(props){
             
             {/* Below code is for dividing the web page into grids for product display */}
             <div className = "gridMui">
-                <Box sx={{ width: '100%' }}>
-                    <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                        <Grid item xs={6}>
-                            <Item>1</Item>
-                            <Card sx={{ minWidth: 275 }}>
+                <Box sx={{ width: '100%' ,margin:'5%'}}>
+                    <Grid container sx={{mr:10,ml:10}}>
+                        <Grid item >
+                            <Card sx={{ width: 500 , height : 500}}>
                                 <CardContent>
-                                    <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                                    Word of the Day
-                                    </Typography>
-                                    <Typography variant="h5" component="div">
-                                        benevoent
-                                    </Typography>
-                                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                        adjective
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        well meaning and kindly.
-                                        <br />
-                                        {'"a benevolent smile"'}
-                                    </Typography>
+                                    <img src={prodDetails.imageURL} alt = "image" width = "375" height = "375"></img>
                                 </CardContent>
-                                <CardActions>
-                                    <Button size="small">Learn More</Button>
-                                 </CardActions>
-                            </Card>
+                            </Card> 
                         </Grid>
-                        <Grid item xs={6}>
-                            <Item>2</Item>
+                        <Grid item>
+                            <Card sx={{ width: 500 , height : 500}}>
+                                <CardContent>
+                                    <div >
+                                    <div id="firstPart">
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 24 }} gutterBottom>
+                                            <b>{prodDetails.name} </b> 
+                                        </Typography>
+                                        {/* <Box component="span" sx={{ p:0.3,textAlign: 'center',width:180 ,height:22, fontSize:12, border: '1px solid blue',backgroundColor: 'blue' ,color : 'white',borderRadius: 8}}>
+                                            Available Quantity : {selector.prodDetails.availableItems}
+                                        </Box> */}
+                                    </div>
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            Category: <b>{prodDetails.category}</b>
+                                        </Typography>
+                                        <br></br>
+                                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                                            {prodDetails.description}
+                                        </Typography>
+                                        <br></br>
+                                        <Typography sx={{ fontSize: 24 }} color="red" gutterBottom>
+                                            <span>&#8377;</span>{prodDetails.price}
+                                        </Typography>
+                                        <br></br> <br></br>
+                                        {/* <Button variant="contained" href="/order">
+                                            Place Order
+                                        </Button>    */}
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </Grid>
                     </Grid>
                 </Box>

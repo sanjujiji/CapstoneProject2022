@@ -14,11 +14,11 @@ export default function App() {
       <Router>
             <Routes>
                 <Route exact path ="/"  element = {<Header />} />
-                <Route path = "/login"  element = {<Login />} />
-                <Route path = "/signup" element = {<Signup />} />
-                <Route path = "/products" element = {<Products />} />
-                <Route path = "/products/:id" element = {<ProductDetails />} />
-                <Route path = "/order" element = {<Order />} />
+                <Route path = "/login"  element = {<Login baseUrl={baseUrl}/>} />
+                <Route path = "/signup" element = {<Signup baseUrl={baseUrl}/>} />
+                <Route path = "/products" element = {<Products baseUrl={baseUrl}/>} />
+                <Route path = "/products/:id" element = {<ProductDetails baseUrl={baseUrl}/>} />
+                <Route path = "/order" element = {<Order baseUrl={baseUrl}/>} />
             </Routes>
       </Router>
     </div>

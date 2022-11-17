@@ -12,24 +12,32 @@
     font-size: x-large;
 }
 
-#signUpLink{
+/* #signUpLink{
     font-size: small;
     position : absolute;
     top : 72%;
     left : 41%;
-}
+} */
 
 #signInLink{
     font-size: small;
-    position : absolute;
-    top : 83%;
-    right : 41%;
+    text-align: right;
 }
 
 #footer{
     width : 100vw;
     position : absolute;
-    bottom : 5%;
+    bottom : 1%;
     text-align: center;
     font-size: small;
+}
+
+#errorMsg{
+    color : red;
+    font-weight: bolder;
+}
+
+#successMsg{
+    color : green;
+    font-weight: bolder;
 }

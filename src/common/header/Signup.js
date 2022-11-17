@@ -13,7 +13,8 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-
+import { useDispatch, useSelector } from "react-redux";
+import { dataActions } from '../dataSlice';
 
 const RedLockIcon = withStyles({
     root: {
@@ -42,7 +43,9 @@ function Signup(props){
     const [loginCnfPassword,setLoginCnfPassword]    =   useState("");
     const [contactNo,setContactNo]                  =   useState("");
 
-  
+    const selector = useSelector(state => state.dataSliceReducer);
+    const dispatch = useDispatch();
+
     //Below listed functions are for setting the different state variables
     const emailIdChangeHandler = (e) => {
         setEmailId(e.target.value);
@@ -68,6 +71,49 @@ function Signup(props){
         setContactNo(e.target.value);
     }
 
+     //this code will make a database call to make a new sign up registration
+     const invokeSignup = () => {
+        //check if password and Confirm password are the same before making the API call
+        console.log(firstName,lastName,loginCnfPassword,loginPassword,emailId,contactNo);
+        if(loginPassword != loginCnfPassword){
+            document.getElementById("errorMsg").innerText = "Password and Confirm Password are not the same. Please correct!"
+            return;
+        }
+        else {
+            let invokeSignUpData = JSON.stringify({
+                "first_name"        : firstName,
+                "last_name"         : lastName,
+                "password"          : loginPassword,
+                "email"             : emailId,
+                "contact_number"    : contactNo
+            });
+            console.log(invokeSignUpData);
+            let xhrSignUp = new XMLHttpRequest();
+            xhrSignUp.addEventListener("readystatechange", function () {
+                if ((xhrSignUp.readyState === 4) && (xhrSignUp.status == 200) ) {
+                    
+                    //Disable the signup and login links and show the logout button and home button
+                    dispatch(dataActions.LOGINSHOW(true));
+                    dispatch(dataActions.LOGOUTSHOW(false));
+                    dispatch(dataActions.SIGNUPSHOW(false));
+                    dispatch(dataActions.HOMESHOW(false));
+                    dispatch(dataActions.SEARCHBARSHOW(false));
+                    //redirect to the products page
+                    document.getElementById("successMsg").innerText = "You have been successfully registered. Please login to continue!"
+                }
+                else {
+                    //return the error message
+                    console.log(xhrSignUp.responseText);
+                    if (JSON.parse(xhrSignUp.responseText).message != undefined)
+                        document.getElementById("errorMsg").innerText = JSON.parse(xhrSignUp.responseText).message;
+                }
+        });
+
+        xhrSignUp.open("POST", props.baseUrl + "users",true);
+        xhrSignUp.setRequestHeader('Content-type', 'application/json');
+        xhrSignUp.send(invokeSignUpData);
+    }
+}
     return(
         <div>
            
@@ -174,16 +220,20 @@ function Signup(props){
                                 sx={{width: { sm: 200, md: 300 }}}
                                 onChange={contactNoChangeHandler}
                             />
+                            
+                            <Button onClick={() => invokeSignup()} variant="contained" sx={{width: { sm: 200, md: 300 }}}>SIGN UP</Button>
+                            <a href='/login' id="signInLink">Already have an account? Sign In</a>
                         </FormControl>
                     </Typography>
                 </ThemeProvider>    
-                
-                <Button variant="contained" sx={{width: { sm: 200, md: 300 }}}>SIGN UP</Button>
-                <br/><br/>
-            </div> {/*end of div for the mid part*/}
-            <a href='#' id="signInLink">Already have an account? Sign In</a>
+                <br></br><br></br>
+                    <span id = "errorMsg"></span>
+                    <br></br>
+                    <span id ="successMsg"></span>
+                </div> {/*end of div for the mid part*/}
+               
             <footer id = "footer">
-                <span>Copyright &copy; <a href="http://upgrad.com">upGrad</a> 2021</span>
+                <span>Copyright &copy; <a href="http://upgrad.com">upGrad</a> 2022</span>
             </footer>
         </div> //end of main div
     );

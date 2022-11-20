@@ -1,7 +1,7 @@
 //This is being built as part of Capstone project.
 //AddOrders.js contains all the functionailities with respect to the product order
 
-import React , {useState,useEffect} from 'react';
+import React ,  {useState,useEffect,Fragment} from 'react';
 import Header from '../../common/header/Header';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
@@ -23,7 +23,13 @@ import Select from '@mui/material/Select';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import { useDispatch, useSelector } from "react-redux";
-import { dataActions } from '../../common/dataSlice';
+// import { dataActions } from '../../common/dataSlice';
+import { QUANTITY } from '../../common/dataSlice';
+import Snackbar from '@mui/material/Snackbar';
+import SnackbarContent from '@mui/material/SnackbarContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import {ORDERPLACEDSHOW} from '../../common/dataSlice';
 
 //Below styling is for the grid
 const Item = styled(Paper)(({ theme }) => ({
@@ -46,95 +52,266 @@ const Item = styled(Paper)(({ theme }) => ({
     },
   }); 
   
+ 
+
 const steps = ["Items","Select Address","Confirm Order"];
 
 
  
 function Order(props){
     const [activeStep, setActiveStep]       =   useState(0);
-    const [selectedAddr, setSelectedAddr]   =   useState('');
+    const [selectAdd, setSelectAdd]         =   useState("");
     const [street,setStreet]                =   useState("");
     const [city,setCity]                    =   useState("");
-    const [firstName,setFirstName]          =   useState("");
-    const [lastName,setLastName]            =   useState("");
-    const [state,setState]                  =   useState("");
+    const [name,setName]                    =   useState("");
+    const [stateNew,setStateNew]            =   useState("");
     const [landmark,setLandmark]            =   useState(""); 
     const [zipCode,setZipCode]              =   useState("");
     const [contactNo, setContactNo]         =   useState("");
     const [prodDetails,setProdDetails]      =   useState({});
-   // const [skipped, setSkipped] = React.useState(new Set());
-    // const isStepOptional = (step) => {
-    //     return step === 1;
-    //   };
-    
-    //   const isStepSkipped = (step) => {
-    //     return skipped.has(step);
-    //   };
-    
-      const handleNext = () => {
-        // let newSkipped = skipped;
-        // if (isStepSkipped(activeStep)) {
-        //   newSkipped = new Set(newSkipped.values());
-        //   newSkipped.delete(activeStep);
-        // }
-    
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        // setSkipped(newSkipped);
-      };
-      const selector = useSelector(state => state.dataSliceReducer);
-      const dispatch = useDispatch();
+    const [savedAddrObj,setSavedAddrObj]    =   useState([]);
+    const [selectedAddrObj,setSelectedAddrObj] = useState({});
+    const [state, setState] = useState({
+        open: false,
+        vertical: 'top',
+        horizontal: 'right'
+      });
+    //   const [orderState, setOrderState] = useState({
+    //     openOrder: false,
+    //     verticalOrder: 'top',
+    //     horizontalOrder: 'right'
+    //   });
+        
+      const {vertical, horizontal, open } = state;
+    //   const {openOrder,verticalOrder,horizontalOrder} = orderState;
 
-      useEffect(() => {
+    const quantity = useSelector((state) => state.orderQuantity);
+    const dispatch = useDispatch();
+      
+    //loads the details of the product from the session storage variable
+    useEffect(() => {
         var dtls = JSON.parse(sessionStorage.prodDetails);
         setProdDetails(dtls);
     },[]);
-      
-      
-      const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-      };
 
-      const handleAddrChange = (event) => {
-        setSelectedAddr(event.target.value);
-      }
+    useEffect(() => {
+        loadAddress();  
+    },[]);
+      
+    /*Stepper functions*/
+    const handleBack = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    };
+
+    const handleNext = () => {
+        console.log("activeStep",activeStep,"selectAdd",selectAdd);
+        if ((activeStep == 1) && (selectAdd == "")){
+            console.log("in if");
+            handleClick({
+                vertical: 'top',
+                horizontal: 'right'
+              })
+        }
+        else if ((activeStep == 1)){
+            loadSelectedAddress();
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
+        else if ((activeStep == 2)){
+            addNewOrder();
+            // setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
+        else
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    };
 
       //Below listed functions are for setting the different state variables
-    const streetChangeHandler = (e) => {
-        setStreet(e.target.value);
-    };
 
-    const cityChangeHandler = (e) => {
-        setCity(e.target.value);
-    };
-
-    const firstNameChangeHandler = (e) => {
-        setFirstName(e.target.value);
-    };
-
-    const lastNameChangeHandler = (e) => {
-        setLastName(e.target.value);
-    };
-
-    const stateChangeHandler = (e) => {
-        setState(e.target.value);
+    const handleAddrChange = (event) => {
+        setSelectAdd(event.target.value);
     }
 
-    const landmarkChangeHandler = (e) => {
-        setLandmark(e.target.value);
+    const streetChangeHandler = (event) => {
+        setStreet(event.target.value);
+    };
+
+    const cityChangeHandler = (event) => {
+        setCity(event.target.value);
+    };
+
+    const nameChangeHandler = (event) => {
+        setName(event.target.value);
+    };
+
+    const stateChangeHandler = (event) => {
+        setStateNew(event.target.value);
     }
     
-    const zipCodeChangeHandler = (e) => {
-        setZipCode(e.target.value);
+
+    const landmarkChangeHandler = (event) => {
+        setLandmark(event.target.value);
+    }
+    
+    const zipCodeChangeHandler = (event) => {
+        setZipCode(event.target.value);
     }
 
-    const contactNoChangeHandler = (e) => {
-        setContactNo(e.target.value);
+    const contactNoChangeHandler = (event) => {
+        setContactNo(event.target.value);
     }
     
     
-      const handleReset = () => {
-        setActiveStep(0);
+    
+      //Below functions are for handling of the snackbar
+      const handleClick = () => {
+        setState({ ...state, open: true });
       };
+    
+      const handleClose = () => {
+        setState({ ...state, open: false });
+      };
+
+    //   const handleClickOrder = () => {
+    //     setOrderState({ ...orderState , openOrder: true });
+    //   };
+    
+    //   const handleCloseOrder = () => {
+    //     setOrderState({ ...orderState, openOrder: false });
+    //   };
+
+      const action = (
+        <React.Fragment>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleClose}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </React.Fragment>
+      );
+
+    //   const actionOrder = (
+    //     <React.Fragment>
+    //       <IconButton
+    //         size="small"
+    //         aria-label="close"
+    //         color="inherit"
+    //         onClick={handleCloseOrder}
+    //       >
+    //         <CloseIcon fontSize="small" />
+    //       </IconButton>
+    //     </React.Fragment>
+    //   );
+
+        //function to filter out the selected address
+        const loadSelectedAddress = () => {
+            console.log("savedAddrObj",savedAddrObj,"selectAdd",selectAdd);
+            const savedAddress = savedAddrObj.filter((el) => el.addressId === selectAdd);
+            setSelectedAddrObj(savedAddress[0]);
+            console.log("saved",savedAddress);
+            console.log("state obj",selectedAddrObj);
+        };
+
+    //function to bring the address details from the database
+    const loadAddress = () =>{
+        const data = null;
+        const emailIdOfLogin = sessionStorage.getItem("emailid")
+        let xhrloadAddress = new XMLHttpRequest();
+        let addressNew = [];
+        xhrloadAddress.addEventListener("readystatechange", function () {
+            if ((xhrloadAddress.readyState === 4) && (xhrloadAddress.status === 200) ) {
+                addressNew = JSON.parse(xhrloadAddress.responseText);
+                setSavedAddrObj(addressNew.content);
+                console.log(addressNew.content);
+            }
+            else if (xhrloadAddress.status !== 200) {
+                addressNew = [];
+                setSavedAddrObj(addressNew);
+            }
+    });
+        console.log(props.baseUrl);
+        xhrloadAddress.open("GET", props.baseUrl + "address?emailid="+emailIdOfLogin,true);
+        xhrloadAddress.setRequestHeader("Authorization",sessionStorage.getItem('x-auth-token'));
+        xhrloadAddress.setRequestHeader('Content-type', 'application/json');
+        xhrloadAddress.send(data);
+    }
+
+    //Below function is to add new addresses
+    const addNewAddress = () => {
+        document.getElementById("errorMsg").innerText = "";
+            let addressData = JSON.stringify({
+                "name"          :   name,
+                "street"        :   street,
+                "city"          :   city,
+                "state"         :   state,
+                "landmark"      :   landmark,
+                "zipCode"       :   zipCode,
+                "phoneNo"       :   contactNo
+            });
+            console.log(addressData);
+            let xhrAddAddress = new XMLHttpRequest();
+            xhrAddAddress.addEventListener("readystatechange", function () {
+                if ((xhrAddAddress.readyState === 4) && (xhrAddAddress.status == 200) ) {
+                    //loadAddress is being called to populate the drop down with the newly added address
+                    loadAddress();
+                    //reset the address fields
+                    setStreet("");
+                    setName("");
+                    setCity("");
+                    setState("");
+                    setLandmark("");
+                    setContactNo("");
+                    setZipCode("");
+                }
+                else if (xhrAddAddress.status !== 200) {
+                    //return the error message
+                    console.log(xhrAddAddress.responseText);
+                    if (JSON.parse(xhrAddAddress.responseText).message != undefined)
+                        document.getElementById("errorMsg").innerText = JSON.parse(xhrAddAddress.responseText).message;
+                }
+        });
+        console.log(sessionStorage.getItem('x-auth-token'));
+        xhrAddAddress.open("POST", props.baseUrl + "addresses",true);
+        xhrAddAddress.setRequestHeader("Authorization", sessionStorage.getItem('x-auth-token'));
+        xhrAddAddress.setRequestHeader('Content-type', 'application/json');
+        xhrAddAddress.send(addressData);
+    
+}
+
+    //Below function is to add new order
+    const addNewOrder = () => {
+        // document.getElementById("errorMsg").innerText = "";
+            let orderData = JSON.stringify({
+                "productId"     :   prodDetails.productId,
+               "addressId"      :   selectedAddrObj.addressId,
+                "quantity"      :   quantity
+            });
+            console.log("orderdata",orderData);
+            let xhrAddOrder = new XMLHttpRequest();
+            xhrAddOrder.addEventListener("readystatechange", function () {
+                if ((xhrAddOrder.readyState === 4) && (xhrAddOrder.status == 200) ) {
+                    dispatch(ORDERPLACEDSHOW(true));
+                    window.location.href="/products";
+                    
+                    
+                    
+                }
+                else if (xhrAddOrder.status !== 200) {
+                    //return the error message
+                    console.log(xhrAddOrder.responseText);
+                    if (JSON.parse(xhrAddOrder.responseText).message != undefined)
+                        document.getElementById("errorMsg").innerText = JSON.parse(xhrAddOrder.responseText).message;
+                }
+        });
+        console.log(sessionStorage.getItem('x-auth-token'));
+        xhrAddOrder.open("POST", props.baseUrl + "orders",true);
+        xhrAddOrder.setRequestHeader("Authorization", sessionStorage.getItem('x-auth-token'));
+        xhrAddOrder.setRequestHeader('Content-type', 'application/json');
+        xhrAddOrder.send(orderData);
+    
+}
+
     return(
         <div>
             <header>
@@ -147,98 +324,95 @@ function Order(props){
                         {steps.map((label, index) => {
                             const stepProps = {};
                             const labelProps = {};
-                        {/* if (isStepOptional(index)) {
-                            labelProps.optional = (
-                            <Typography variant="caption">Optional</Typography>
-                        );
-                    } */}
-                        {/* if (isStepSkipped(index)) {
-                            stepProps.completed = false;
-                        } */}
-                        return (
-                            <Step key={label} {...stepProps}>
-                                <StepLabel {...labelProps}>{label}</StepLabel>
-                            </Step>
-                        );
+                            return (
+                                <Step key={label} {...stepProps}>
+                                    <StepLabel {...labelProps}>{label}</StepLabel>
+                                </Step>
+                            );
                         })}
                     </Stepper>      
                 </Box>
             </div>{/*ending div for stepper */}
             
             {/* Below code is for dividing the web page into grids for product display */}
-            <div className = "gridMui">
-                <Box sx={{ width: '100%' ,margin:'5%'}}>
+            {
+            (activeStep === 0) ? 
+            <div className = "gridMui" >
+                <Box sx={{ width: '100%' ,margin:'1%'}}>
                     <Grid container sx={{mr:10,ml:10}}>
                         <Grid item >
-                            <Card sx={{ width: 500 , height : 500}}>
+                            <Card sx={{ width: 450 , height : 450}}>
                                 <CardContent>
                                     <img src={prodDetails.imageURL} alt = "image" width = "375" height = "375"></img>
                                 </CardContent>
                             </Card> 
                         </Grid>
                         <Grid item>
-                            <Card sx={{ width: 500 , height : 500}}>
+                            <Card sx={{ width: 450 , height : 450}}>
                                 <CardContent>
                                     <div >
-                                    <div id="firstPart">
                                         <Typography style={{wordWrap : "false"}} sx={{ fontSize: 24 }} gutterBottom>
                                             <b>{prodDetails.name} </b> 
                                         </Typography>
-                                        {/* <Box component="span" sx={{ p:0.3,textAlign: 'center',width:180 ,height:22, fontSize:12, border: '1px solid blue',backgroundColor: 'blue' ,color : 'white',borderRadius: 8}}>
-                                            Available Quantity : {selector.prodDetails.availableItems}
-                                        </Box> */}
-                                    </div>
+
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            Quantity: <b>{quantity} </b> 
+                                        </Typography>
+                                        
                                         <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
                                             Category: <b>{prodDetails.category}</b>
                                         </Typography>
                                         <br></br>
+                                        
                                         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
                                             {prodDetails.description}
                                         </Typography>
                                         <br></br>
+                                        
                                         <Typography sx={{ fontSize: 24 }} color="red" gutterBottom>
-                                            <span>&#8377;</span>{prodDetails.price}
+                                            <span>&#8377;</span>{prodDetails.price * quantity}
                                         </Typography>
                                         <br></br> <br></br>
-                                        {/* <Button variant="contained" href="/order">
-                                            Place Order
-                                        </Button>    */}
                                     </div>
                                 </CardContent>
                             </Card>
                         </Grid>
                     </Grid>
                 </Box>
-            </div> {/* Grid ending */}
+                
+            </div> 
             
-                <br></br><br></br>
-                {/*Below pieces of code are for adding / selecting shipping address */}
+            :null}
+            
+            
+            {/*Below pieces of code are for adding / selecting shipping address */}
+            {
+            (activeStep === 1) ?                             
                 <div className='outerDiv'>
                     <div className = "innerDiv">
-                        
                             <FormControl sx={{minWidth: 800 }}>
-                            <InputLabel id="addressSelect">Select Address</InputLabel>
-                            <br></br><br></br>
-                                <Select
-                                    labelId="addressSelect"
-                                    value={selectedAddr}
-                                    onChange={handleAddrChange}
-                                    displayEmpty
-                                    inputProps={{ 'aria-label': 'Without label' }}
-                                    className="selectAddr"
-                                >
-                                    <MenuItem value="">
-                                        <i>Select...</i>
-                                    </MenuItem>
-                                    <MenuItem value={10}>Default</MenuItem>
-                                </Select> 
-                            </FormControl> 
+                                <InputLabel id="addressSelect">Select Address</InputLabel>
+                                    <Select
+                                        labelId="addressSelect"
+                                        id="demo-simple-select"
+                                        value={selectAdd}
+                                        label="Select Address"
+                                        onChange={handleAddrChange}
+                                        >
+                                        <MenuItem value={0}>Select...</MenuItem>
+                                        {savedAddrObj.map((addr) => (
+                                            <MenuItem value={addr.addressId}>{addr.name+" --> "+addr.street+" ,"+addr.city+" ,"+addr.   landmark+" ,"+addr.state+" - "+addr.zipCode}
+                                            </MenuItem>
+                                        ))};
+                                    </Select>            
+                            </FormControl>
+                            <br></br><br></br> 
                     </div>{/* end of div select */}
-                    <br></br><br></br>
+                    
                     <div className = "innerDiv">
                         <InputLabel>- OR -</InputLabel>        
                     </div>{/* end of div InputLabel */}
-                    <br></br><br></br>
+                    <br></br>
                     <div className = "innerDiv">
                         <InputLabel id="addAddress">Add Address</InputLabel>
                     </div>{/* end of div InputLabel for address*/}
@@ -249,30 +423,15 @@ function Order(props){
                                 <FormControl required>
                                     <TextField 
                                         required
-                                        value={firstName}
+                                        value={name}
                                         id="outlined-required"
-                                        label="First Name"
+                                        label="Address Name"
                                         sx={{width: { sm: 200, md: 300 }}}
-                                        onChange={firstNameChangeHandler}
+                                        onChange={nameChangeHandler}
                                     />
                                 </FormControl>
                             </Typography>
-                        </ThemeProvider>
-            
-                        <ThemeProvider theme={theme}>
-                            <Typography variant="body1" gutterBottom>
-                                <FormControl required>
-                                    <TextField 
-                                        required
-                                        value={lastName}
-                                        id="outlined-required"
-                                        label="Last Name"
-                                        sx={{width: { sm: 200, md: 300 }}}
-                                        onChange={lastNameChangeHandler}
-                                    />
-                                </FormControl>
-                            </Typography>
-                        </ThemeProvider>        
+                        </ThemeProvider>    
                 
                         <ThemeProvider theme={theme}>
                             <Typography variant="body1" gutterBottom>
@@ -324,7 +483,7 @@ function Order(props){
                                 <FormControl  required>
                                     <TextField
                                         required
-                                        value={state}
+                                        value={stateNew}
                                         id="outlined-required"
                                         label="State"
                                         sx={{width: { sm: 200, md: 300 }}}
@@ -362,21 +521,102 @@ function Order(props){
                                 </FormControl>
                             </Typography>
                         </ThemeProvider>
-                        <Button variant="contained" sx={{width: { sm: 200, md: 300 }}}>SAVE ADDRESS</Button>
+                        <Button variant="contained" sx={{width: { sm: 200, md: 300 }}} onClick={addNewAddress}>SAVE ADDRESS</Button>
                         <br/><br/>
                     </div>{/*End of inner div */}
-                </div>{/*End of outer div */}
-                {activeStep === steps.length ? (
-                    <React.Fragment>
-                        <Typography sx={{ mt: 2, mb: 1 }}>
+                    <p id="errorMsg"></p>
+                </div>
+                
+                : null }
+
+                {/*Below piece of code is for the Order confirmation */}
+                {/* Below code is for dividing the web page into grids for order confirmation display */}
+                {
+                (activeStep === 2) ?    
+                <div className = "gridMui" >
+                <Box sx={{ width: '100%'}}>
+                    <Grid container >
+                        <Grid item >
+                            <Card sx={{ width: 600 , height : 350}}>
+                                <CardContent>
+                                <div >
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 24 }} gutterBottom>
+                                            <b>{prodDetails.name} </b> 
+                                        </Typography>
+
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            Quantity: <b>{quantity} </b> 
+                                        </Typography>
+                                        
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            Category: <b>{prodDetails.category}</b>
+                                        </Typography>
+                                        <br></br>
+                                        
+                                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                                            <em>{prodDetails.description}</em>
+                                        </Typography>
+                                        <br></br>
+                                        
+                                        <Typography sx={{ fontSize: 24 }} color="red" gutterBottom>
+                                            Total Price:<span>&nbsp;&#8377;</span> {prodDetails.price * quantity}
+                                        </Typography>
+                                        <br></br> <br></br>
+                                    </div>
+                                </CardContent>
+                            </Card> 
+                        </Grid>
+                        <Grid item>
+                            <Card sx={{ width: 600 , height : 350}}>
+                                <CardContent>
+                                    <div >
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 24 }} gutterBottom>
+                                            <b>Address Details: </b> 
+                                        </Typography>
+
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            {selectedAddrObj.name} 
+                                        </Typography>
+                                        
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            Contact No: <b>{selectedAddrObj.contactNumber}</b>
+                                        </Typography>
+                                        
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            {selectedAddrObj.street+" ," +selectedAddrObj.city}
+                                        </Typography>
+                                        
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            {selectedAddrObj.state}
+                                        </Typography>
+
+                                        <Typography style={{wordWrap : "false"}} sx={{ fontSize: 16 }} gutterBottom>
+                                            {selectedAddrObj.zipCode}
+                                        </Typography>
+                                        
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+                </Box>
+                
+            </div> 
+            :null}
+                
+                {(activeStep === steps.length) ? 
+                (
+                {/*    //<React.Fragment>
+                        {/* <Typography sx={{ mt: 2, mb: 1 }}>
                             All steps completed - you&apos;re finished
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                        </Typography> 
+                        /* <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                             <Box sx={{ flex: '1 1 auto' }} />
                             <Button onClick={handleReset}>Reset</Button>
                         </Box>
-                    </React.Fragment>
-                ) : (
+                    </React.Fragment> */}
+                ) :
+                (
                     <React.Fragment>
                         {/* <Typography sx={{ mt: 2, mb: 1 }}>Step {activeStep + 1}</Typography> */}
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent : 'center', pt: 2 }}>
@@ -389,53 +629,29 @@ function Order(props){
                             >
                                 Back
                             </Button>
-                            {/*<Box sx={{ flex: '1 1 auto' }} />
-                            {isStepOptional(activeStep) && (
-                            <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                                Skip
-                            </Button>
-                            )}*/}
                             <Button color = "primary" variant = "contained" onClick={handleNext}>
-                                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                                {activeStep === steps.length - 1 ? 'Place Order' : 'Next'}
                             </Button>
                         </Box>
                     </React.Fragment>
-                )}
-                {/*Below piece of code is for the Order confirmation */}
-                {/* Below code is for dividing the web page into grids for product display */}
-            <div className = "gridMui">
-                <Box sx={{ width: '100%' }}>
-                    <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                        <Grid item xs={6}>
-                            <Item>1</Item>
-                            <Card sx={{ minWidth: 275 }}>
-                                <CardContent>
-                                    <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                                    Word of the Day
-                                    </Typography>
-                                    <Typography variant="h5" component="div">
-                                        benevoent
-                                    </Typography>
-                                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                        adjective
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        well meaning and kindly.
-                                        <br />
-                                        {'"a benevolent smile"'}
-                                    </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    <Button size="small">Learn More</Button>
-                                 </CardActions>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Item>2</Item>
-                        </Grid>
-                    </Grid>
-                </Box>
-            </div> {/* Grid ending */}
+                ) }
+                
+            {/*Snackbar for address mandatory element */}
+            <div>
+                <Snackbar sx={{width : '10'}}
+                    anchorOrigin={{ vertical, horizontal }}
+                    open={open}
+                    onClose={handleClose}
+                    key={vertical + horizontal}
+                >
+                    <SnackbarContent sx={{ backgroundColor: "red", color : "white"}}
+                        message="Please select address!"
+                        action = {action}>
+                    </SnackbarContent>
+                </Snackbar>
+            </div>
+
+           
         </div> //end of main div
     );
 }

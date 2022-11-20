@@ -4,8 +4,8 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import '../components/products/Products.css';
 import { useDispatch, useSelector } from "react-redux";
 // import { useDispatch } from "react-redux";
-import { dataActions } from '../common/dataSlice';
-
+// import { dataActions } from '../common/dataSlice';
+import { PRODUCTCATEGORYSELECTED } from '../common/dataSlice';
   
 function ProductCategories(props){
     //The below state variable is setup for the toggle button
@@ -14,11 +14,12 @@ function ProductCategories(props){
 
     // const selector = useSelector(state => state.dataSliceReducer);
     const dispatch = useDispatch();
-    const selector = useSelector(state => state.dataSliceReducer);
+    // const selector = useSelector(state => state.dataSliceReducer);
+    const categorySelected = useSelector((state) => state.categorySelected);
 
     const handleChange = (event) => {
-        dispatch(dataActions.PRODUCTCATEGORYSELECTED(event.target.value));
-        console.log('store value',selector.categorySelected);
+        dispatch(PRODUCTCATEGORYSELECTED(event.target.value));
+        console.log('store value',categorySelected);
         if (window.location.href != "http://localhost:3000/products" ){
             window.location.href = '/products/';
         }
@@ -57,7 +58,7 @@ function ProductCategories(props){
             <div id = "toggle">
                 <ToggleButtonGroup 
                     color="primary"
-                    value={selector.categorySelected}
+                    value={categorySelected}
                     exclusive
                     onChange={handleChange}
                     aria-label="Platform"

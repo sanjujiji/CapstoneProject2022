@@ -8,11 +8,16 @@ export const dataSlice = createSlice({
         signUpShow          : true,
         homeShow            : false,
         addProductShow      : false,
-        searchBarShow       : true,
+        searchBarShow       : false,
         searchBarValue      : "",
         // prodDetails         : {},
         categorySelected    : 'all',
-        orderQuantity       : 0
+        orderQuantity       : 0,
+        adminBtnShow        : false,
+        orderPlaced         : false,
+        productModified     : false,
+        productModifiedName : ""
+
     },
     reducers: {
         LOGINSHOW : (state , action) => {
@@ -44,8 +49,25 @@ export const dataSlice = createSlice({
         },
         QUANTITY : (state,action) =>{
             state.orderQuantity = action.payload;
+        },
+        ADMINSHOW : (state,action) =>{
+            state.adminBtnShow = action.payload;
+        },
+        ORDERPLACEDSHOW : (state,action) =>{
+            state.orderPlaced = action.payload;
+        },
+        PRODUCTMODIFIEDSHOW : (state,action) =>{
+            state.productModified = action.payload;
+        },
+        PRODUCTMODIFIEDNAMESHOW : (state,action) =>{
+            state.productModifiedName = action.payload;
         }
 
     }
 })  
-export const dataActions = dataSlice.actions
+
+export const {
+    LOGINSHOW,LOGOUTSHOW,SIGNUPSHOW,HOMESHOW,ADDPRODUCTSHOW,SEARCHBARSHOW,SEARCHBARVALUE,PRODUCTCATEGORYSELECTED,QUANTITY,ADMINSHOW,ORDERPLACEDSHOW,PRODUCTMODIFIEDSHOW,PRODUCTMODIFIEDNAMESHOW} = dataSlice.actions
+// export const dataActions = dataSlice.actions
+
+export default dataSlice.reducer;

@@ -16,7 +16,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useDispatch, useSelector } from "react-redux";
-import { dataActions } from '../dataSlice';
+// import { dataActions } from '../dataSlice';
+import { SEARCHBARVALUE,LOGINSHOW,LOGOUTSHOW,SIGNUPSHOW,HOMESHOW,ADDPRODUCTSHOW,SEARCHBARSHOW,ORDERPLACEDSHOW } from '../dataSlice';
+import {persistor} from '../Store';
 
 const WhiteShoppingCartIcon = withStyles({
     root: {
@@ -70,57 +72,59 @@ const Search = styled('div')(({ theme }) => ({
   
 
 function Header(){
-  const [loginShow,setLogin]                = useState(true);
-  const [logoutShow,setLogout]              = useState();
-  const [signUpShow,setSignUp]              = useState(true);
-  const [homeShow,setHome]                  = useState();
-  const [addProductShow,setAddProduct]      = useState();
-  const [searchBarShow,setSearchBar]        = useState();
-  const [searchBarValue,setSearchBarValue]  = useState();
+  // const [loginShow,setLogin]                = useState();
+  // const [logoutShow,setLogout]              = useState();
+  // const [signUpShow,setSignUp]              = useState();
+  // const [homeShow,setHome]                  = useState();
+  // const [addProductShow,setAddProduct]      = useState();
+  // const [searchBarShow,setSearchBar]        = useState();
+  // const [searchBarValue,setSearchBarValue]  = useState();
   //for react-redux
 
-  console.log("in header",loginShow,signUpShow);
 
   const dispatch = useDispatch();
-  const selector = useSelector(state => state.dataSliceReducer);
-
-  useEffect(() => {
-      setLogin(selector.loginShow);
-  },[selector.loginShow]);
-
-  useEffect(() => {
-    setLogout(selector.logoutShow);
-  },[selector.logoutShow]);
-
-  useEffect(() => {
-    setSignUp(selector.signUpShow);
-  },[selector.signUpShow]);
-
-  useEffect(() => {
-    setHome(selector.homeShow);
-  },[selector.homeShow]);
-
-  useEffect(() => {
-    setAddProduct(selector.addProductShow);
-  },[selector.addProductShow]);
-
-  useEffect(() => {
-    setSearchBar(selector.searchBarShow);
-  },[selector.searchBarShow]);
-
-  useEffect(() => {
-    dispatch(dataActions.SEARCHBARVALUE(searchBarValue));
-  },[searchBarValue]);
+  //Below are the list of central state variables being managed in the persist store
+  const loginShowStore = useSelector(state => state.loginShow);
+  const logoutShowStore = useSelector(state => state.logoutShow);
+  const signUpShowStore = useSelector(state => state.signUpShow);
+  const homeShowStore = useSelector(state => state.homeShow);
+  const addProductStore = useSelector(state => state.addProductShow);
+  const searchBarShowStore = useSelector(state => state.searchBarShow);
+  const searchBarValueStore = useSelector(state => state.searchBarValue);
 
   const handleChange = (event) => {
-    setSearchBarValue(event.target.value);
+      dispatch(SEARCHBARVALUE(event.target.value));
   };
+
+  const invokeLogout = () => {
+    //1. enable the buttons of login and signUp on logging out
+    //2. Bring up the Login page
+    //3. delete the local storage variables
+
+    window.location.href ="/login";
+    dispatch(LOGINSHOW(true));
+    dispatch(LOGOUTSHOW(false));
+    dispatch(SIGNUPSHOW(true));
+    dispatch(HOMESHOW(false));
+    dispatch(ADDPRODUCTSHOW(false));
+    dispatch(SEARCHBARSHOW(false));
+    dispatch(SEARCHBARVALUE(""));
+    dispatch(ORDERPLACEDSHOW(false));
+
+    persistor.purge();
+    sessionStorage.removeItem("x-auth-token");
+    sessionStorage.removeItem("prodDetails");
+    sessionStorage.removeItem("emailid");
+
+    
+
+  }
 
 return(
             <div>
                <header className = "header">
                     <Box sx={{ flexGrow: 1 }}>
-                        <AppBar position="sticky">
+                        <AppBar position="fixed">
                             <Toolbar sx={{justifyContent: "space-between"}}>
                                 <div className = "leftMost">
                                     <IconButton size="large" edge="start" color="inherit" aria-label="open drawer" sx={{ mr: 2 }}>
@@ -130,34 +134,34 @@ return(
                                     </IconButton>
                                     <Typography noWrap component="div" sx={{ fontSize : 14, flexGrow: 1, display: { xs: 'none', sm:'block' } }}> upGrad E-shop </Typography>
                                 </div>
-                                {searchBarShow ?
+                                {searchBarShowStore ?
                                 <div className = "middle">
                                 <Search>
                                     <SearchIconWrapper>
                                         <SearchIcon />
                                     </SearchIconWrapper>
                                 
-                                    <StyledInputBase value = {searchBarValue} onChange={handleChange} placeholder="Search…" inputProps={{ 'aria-label': 'search' }}/>
+                                    <StyledInputBase value = {searchBarValueStore} onChange={handleChange} placeholder="Search…" inputProps={{ 'aria-label': 'search' }}/>
                                 </Search>
                                 </div>
                                 : null}
                                 
                                 <div className='rightMost'>
                                     <Stack direction="row" spacing={2} > 
-                                        {loginShow ?
+                                        {loginShowStore ?
                                         <Button href="/login" id = "login">Login</Button>
                                         : null}
-                                        {signUpShow ?
+                                        {signUpShowStore ?
                                         <Button href= "/signup" id = "signUp">Sign Up</Button>
                                         : null}
-                                        {homeShow ?
+                                        {homeShowStore ?
                                         <Button href="#" id = "home">Home</Button>
                                         : null}
-                                        {addProductShow ?
+                                        {addProductStore ?
                                         <Button href="#" id = "addProduct">Add Product</Button>
                                         : null}
-                                        {logoutShow ?
-                                        <Button id = "logout"> Logout </Button>
+                                        {logoutShowStore ?
+                                        <Button id = "logout" onClick={invokeLogout}> Logout </Button>
                                         : null}
                                     </Stack>
                                 </div>

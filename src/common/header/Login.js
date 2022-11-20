@@ -12,7 +12,8 @@ import Icon from '@mui/material/Icon';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useDispatch, useSelector } from "react-redux";
-import { dataActions } from '../dataSlice';
+// import { dataActions } from '../dataSlice';
+import { LOGINSHOW,LOGOUTSHOW,SIGNUPSHOW,HOMESHOW,SEARCHBARSHOW,ADDPRODUCTSHOW,ADMINSHOW } from '../dataSlice';
 import jwt from 'jwt-decode';
 
 const RedLockIcon = withStyles({
@@ -28,9 +29,10 @@ function Login(props){
     const [loginPassword,setLoginPassword] = useState("");
 
      
-  const selector = useSelector(state => state.dataSliceReducer);
+//   const selector = useSelector(state => state.dataSliceReducer);
   const dispatch = useDispatch();
-
+  const loginShowStore = useSelector(state => state.loginShow);
+  const adminShowStore = useSelector(state => state.adminBtnShow);
     const emailIdChangeHandler = (e) => {
         setEmailId(e.target.value);
     };
@@ -52,28 +54,31 @@ function Login(props){
                 
                 //save the x-auth-token to local storage for future use
                 sessionStorage.setItem("x-auth-token",xhrLogin.getResponseHeader('x-auth-token'));
+                //saving the mail id in the session storage for future use
+                sessionStorage.setItem("emailid",emailId);
                 console.log("decoded token",jwt(xhrLogin.getResponseHeader('x-auth-token')).role);
-                if (jwt(xhrLogin.getResponseHeader('x-auth-token')).role === "admin"){
+                if (jwt(xhrLogin.getResponseHeader('x-auth-token')).role.toUpperCase() === "ADMIN"){
                 //Disable the signup and login links and show the logout button and home button
-                    dispatch(dataActions.ADDPRODUCTSHOW(true));
+                    dispatch(ADDPRODUCTSHOW(true));
+                    dispatch(ADMINSHOW(true));
                 
                 }
-                    dispatch(dataActions.LOGINSHOW(false));
-                    dispatch(dataActions.LOGOUTSHOW(true));
-                    dispatch(dataActions.SIGNUPSHOW(false));
-                    dispatch(dataActions.HOMESHOW(true));
-                    dispatch(dataActions.SEARCHBARSHOW(true));
+                    dispatch(LOGINSHOW(false));
+                    dispatch(LOGOUTSHOW(true));
+                    dispatch(SIGNUPSHOW(false));
+                    dispatch(HOMESHOW(true));
+                    dispatch(SEARCHBARSHOW(true));
                     //redirect to the products page
-                    console.log("login",selector.loginShow);
+                    console.log("login",loginShowStore);
                     window.location.href = '/products';
             }
                 else if (xhrLogin.status !== 200){
                 //return the error message
                 if ((xhrLogin.responseText) != undefined)
-                    document.getElementById("errorMsg").innerText = xhrLogin.responseText;
+                    document.getElementById("errorMsg").innerText = JSON.parse(xhrLogin.responseText).message
             }
         });
-
+        console.log("base url="+props.baseUrl);
         xhrLogin.open("POST", props.baseUrl + "auth",true);
         // xhrLogin.setRequestHeader("Cache-Control", "no-cache");
         xhrLogin.setRequestHeader('Content-type', 'application/json');
@@ -123,8 +128,9 @@ function Login(props){
                     <br></br>
                     <a href='/signup' id="signUpLink">Don't have an account? Sign Up</a>
                     <br></br><br></br>
-                    <p id = "errorMsg"></p>
+                    <span id = "errorMsg"></span>
                 </FormControl>
+                    
                 
             </div> {/*end of div for the mid part*/}
             

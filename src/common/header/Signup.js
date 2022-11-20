@@ -14,7 +14,8 @@ import Button from '@mui/material/Button';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from "react-redux";
-import { dataActions } from '../dataSlice';
+// import { dataActions } from '../dataSlice';
+import { LOGINSHOW,LOGOUTSHOW,SIGNUPSHOW,HOMESHOW,SEARCHBARSHOW,ADDPRODUCTSHOW } from '../dataSlice';
 
 const RedLockIcon = withStyles({
     root: {
@@ -73,6 +74,8 @@ function Signup(props){
 
      //this code will make a database call to make a new sign up registration
      const invokeSignup = () => {
+        document.getElementById("successMsg").innerText="";
+        document.getElementById("errorMsg").innerText="";
         //check if password and Confirm password are the same before making the API call
         console.log(firstName,lastName,loginCnfPassword,loginPassword,emailId,contactNo);
         if(loginPassword != loginCnfPassword){
@@ -93,11 +96,11 @@ function Signup(props){
                 if ((xhrSignUp.readyState === 4) && (xhrSignUp.status == 200) ) {
                     
                     //Disable the signup and login links and show the logout button and home button
-                    dispatch(dataActions.LOGINSHOW(true));
-                    dispatch(dataActions.LOGOUTSHOW(false));
-                    dispatch(dataActions.SIGNUPSHOW(false));
-                    dispatch(dataActions.HOMESHOW(false));
-                    dispatch(dataActions.SEARCHBARSHOW(false));
+                    dispatch(LOGINSHOW(true));
+                    dispatch(LOGOUTSHOW(false));
+                    dispatch(SIGNUPSHOW(false));
+                    dispatch(HOMESHOW(false));
+                    dispatch(SEARCHBARSHOW(false));
                     //redirect to the products page
                     document.getElementById("successMsg").innerText = "You have been successfully registered. Please login to continue!"
                 }
@@ -120,6 +123,7 @@ function Signup(props){
             <header>
                 <Header />
             </header>
+            <br/><br/><br/><br/><br/>
             <div className = "signup">
             <br/>
                 <Icon size="large" sx={{backgroundColor:"#EC3B83", border: "4px solid #EC3B83",borderRadius: 50}}>
@@ -226,7 +230,6 @@ function Signup(props){
                         </FormControl>
                     </Typography>
                 </ThemeProvider>    
-                <br></br><br></br>
                     <span id = "errorMsg"></span>
                     <br></br>
                     <span id ="successMsg"></span>

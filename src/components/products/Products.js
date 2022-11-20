@@ -16,28 +16,149 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-// import { useDispatch, useSelector } from "react-redux";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 // import { dataActions } from '../../common/dataSlice';
 import ProductCategories from '../../common/ProductCategories';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { IconButton } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import Snackbar from '@mui/material/Snackbar';
+import SnackbarContent from '@mui/material/SnackbarContent';
+import CloseIcon from '@mui/icons-material/Close';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
-  
 function Products(props){
     
     const [sortBy, setSortBy]                       = useState('');
     const [products,setProducts]                    = useState([]);
+    const [dialogDeleteOpen,setDialogDeleteOpen]    = useState(false);
+    const [productNameToBeDeleted,setProductNameToBeDeleted] = useState("");
+    const [snackBarShow,setSnackBarShow] = useState(true);
 
-    const selector = useSelector(state => state.dataSliceReducer);
-    // const dispatch = useDispatch();
+    const categorySelected = useSelector(state => state.categorySelected);
+    const searchBarValue = useSelector(state => state.searchBarValue);
+    const adminShowStore = useSelector(state => state.adminBtnShow);
+    const orderPlacedShowStore = useSelector(state => state.orderPlaced);
+    const productModified = useSelector(state => state.productModified);
+    const productModifiedName = useSelector(state => state.productModifiedName);
+    const dispatch = useDispatch();
+
+    console.log("productModified",productModified);
+
+    //for displaying the Order placed snackbar
+    const [orderState, setOrderState] = useState({
+        openOrder: false,
+        verticalOrder: 'top',
+        horizontalOrder: 'right'
+      });
+    const {openOrder,verticalOrder,horizontalOrder} = orderState;
+
+    //for displaying the product deleted snackbar
+    const [deleteProdState, setDeleteProdState] = useState({
+        deleteProd: false,
+        verticalDeleteProd: 'top',
+        horizontalDeleteProd: 'right'
+      });
+    const {deleteProd,verticalDeleteProd,horizontalDeleteProd} = deleteProdState;
+      //for displaying the product modification snackbar
+    const [modifyProdState, setModifyProdState] = useState({
+        openModifyProd: false,
+        verticalModify: 'top',
+        horizontalModify: 'right'
+      });
+    const {openModifyProd,verticalModify,horizontalModify} = modifyProdState;
+
+    useEffect(() => {
+        handleClickOrder({
+            verticalOrder: 'top',
+            horizontalOrder: 'right'
+          });
+    },[orderPlacedShowStore]);
+
+    useEffect(() => {
+        handleModifyProdOpen({
+            verticalModify: 'top',
+            horizontalModify: 'right'
+          });
+    },[productModified]);
+
+    const handleClickOrder = () => {
+        setOrderState({ ...orderState , openOrder: true });
+      };
+    
+      const handleCloseOrder = () => {
+        setOrderState({ ...orderState, openOrder: false });
+      };
 
       const handleSortChange = (event) => {
         setSortBy(event.target.value);
       }
 
+      const handleOpenProdDelete = () => {
+        setDeleteProdState({ ...deleteProdState , deleteProd: true });
+      };
+    
+      const handleCloseProdDelete = () => {
+        setDeleteProdState({ ...deleteProdState, deleteProd: false });
+      };
+
+      const handleModifyProdOpen = () => {
+        setModifyProdState({ ...modifyProdState , openModifyProd: true });
+    };
+
+    const handleModifyProdClose = () => {
+        setModifyProdState({ ...modifyProdState , openModifyProd: false });
+    };
+
+    const actionOrder = (
+        <React.Fragment>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleCloseOrder}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </React.Fragment>
+      );
+
+      //Snackbar actions after deleting a product
+      const actionProductDelete = (
+        <React.Fragment>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleCloseProdDelete}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </React.Fragment>
+      );
+
+      const actionModifyProd = (
+        <React.Fragment>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleModifyProdClose}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </React.Fragment>
+      );
+
         //This code is to load the products
         useEffect(() => {
             loadProducts();
-        },[selector.categorySelected,sortBy,selector.searchBarValue]);
+        },[categorySelected,sortBy,searchBarValue]);
 
         //function to sort the products array by price
         const sortByPriceAsc = (arr) => {
@@ -61,6 +182,25 @@ function Products(props){
             });
         }
 
+        //pop the dialog box before deletion
+        const handleDialogClickOpen = () => {
+            setDialogDeleteOpen(true);
+          };
+        
+          const handleDialogClose = () => {
+            setDialogDeleteOpen(false);
+          };
+
+          const handleDeletion = () => {
+            console.log("in handleDeletion");
+            deleteSelectedProduct();
+            handleDialogClose();
+          }
+
+          const openModifyPage = () => {
+            console.log("in open modify");
+            window.location.href = "/modify/"+ document.body.querySelector("#hiddenProdId").innerHTML;
+          }
 
         //function to bring the products from the database
         const loadProducts = () =>{
@@ -71,12 +211,12 @@ function Products(props){
             xhrloadProducts.addEventListener("readystatechange", function () {
                 if ((xhrloadProducts.readyState === 4) && (xhrloadProducts.status === 200) ) {
                     prods = JSON.parse(xhrloadProducts.responseText);
-                    console.log("category",selector.categorySelected);
+                    console.log("category",categorySelected);
                     console.log("prods",prods);
                     //the below piece of code is to check if there are any specific categories selected
-                    if (selector.categorySelected !== "all"){
+                    if (categorySelected !== "all"){
                         var newArray = prods.content.filter((element) => {
-                            return (element.category === selector.categorySelected);
+                            return (element.category === categorySelected);
                         });
                     }
                     else {
@@ -86,9 +226,9 @@ function Products(props){
                     };
                     console.log("new",newArray);
                     var newArray1;
-                    if (selector.searchBarValue){
+                    if (searchBarValue){
                         newArray1 = newArray.filter((element) => {
-                            return (element.name.toUpperCase().search(selector.searchBarValue.toUpperCase())>=0);
+                            return (element.name.toUpperCase().search(searchBarValue.toUpperCase())>=0);
                         });
                     }
                     else {
@@ -106,9 +246,7 @@ function Products(props){
                     else if (sortBy === 40){
                         sortByDates(newArray1);
                     }
-                    
                     setProducts(newArray1);
-                    
                 }
                 else if (xhrloadProducts.status !== 200) {
                     setProducts([]);
@@ -125,12 +263,53 @@ function Products(props){
         window.location.href = '/products/'+productId;
       }
     
+
+    //function to delete a product
+    
+    const deleteSelectedProduct = () =>{
+        const data = null;
+        var productIdToDelete = document.body.querySelector("#hiddenProdId").innerHTML;
+        setProductNameToBeDeleted("Product "+document.body.querySelector("#productName").innerHTML+" deleted successfully!");
+        // const emailIdOfLogin = sessionStorage.getItem("emailid")
+        let xhrDeleteProduct = new XMLHttpRequest();
+        xhrDeleteProduct.addEventListener("readystatechange", function () {
+            console.log("in delete");
+            console.log(xhrDeleteProduct.readyState,xhrDeleteProduct.status);
+            if ((xhrDeleteProduct.readyState === 4) && (xhrDeleteProduct.status === 200) ) {
+                //create snackbar to show successful deletion
+                loadProducts();
+                setSnackBarShow(true);
+                console.log("snackbar",snackBarShow);
+                handleOpenProdDelete({
+                    verticalDeleteProd      : 'top',
+                    horizontalDeleteProd    : 'right'
+                  });
+                  
+            }
+            else if ((xhrDeleteProduct.readyState === 4) && (xhrDeleteProduct.status !== 200)){
+               //show an error snackbar to show unsuccessful deletion
+               console.log("in else of snackbarshow",snackBarShow);
+               setProductNameToBeDeleted("Product "+document.body.querySelector("#productName").innerHTML+" was not deleted!");
+               setSnackBarShow(false);
+               handleOpenProdDelete({
+                verticalDeleteProd      : 'top',
+                horizontalDeleteProd    : 'right'
+              });
+            }
+    });
+        xhrDeleteProduct.open("DELETE", props.baseUrl + "products/"+productIdToDelete,true);
+        // xhrDeleteProduct.open("DELETE", props.baseUrl + "products/8",true)
+        xhrDeleteProduct.setRequestHeader("Authorization",sessionStorage.getItem('x-auth-token'));
+        xhrDeleteProduct.setRequestHeader('Content-type', 'application/json');
+        xhrDeleteProduct.send(data);
+    }
+  
     return(
         <div> 
             <header>
                 <Header />
             </header>
-            <br></br>
+            <br></br> <br></br> <br></br><br></br>
                 <ProductCategories  baseUrl={props.baseUrl}/>
             <br></br>
             
@@ -154,36 +333,51 @@ function Products(props){
                     </Select> 
                 </FormControl>
             </div>{/* end of div select */}
-            <br></br><br></br>
+            <br></br><br></br><br></br><br></br>
             {/* Below code is for dividing the web page into grids for product display */}
-            <div className = "gridMui">
+            <div className = "prodDisplay">
                 <Box sx={{ width: '100%' }}>
                     <Grid container rowSpacing={3} columnSpacing={{ xs: 2, sm: 4, md: 4 }} >
                             {/*The below code is for dynamically populating the products */}
                             {products.map((product) => (
                                 <Grid item xs={4} > 
                                     {/* <Item><img src={product.imageURL} alt = {product.imageURL} width = "100" height = "100"></img></Item> */}
-                                    <Card sx={{ width: 325 , height : 400}}>
-                                        <CardContent>
-                                        <img src={product.imageURL} alt = {product.imageURL} width = "275" height = "200"></img>
-                                        <div id="prodTitle">
-                                            <Typography style={{wordWrap : "true"}} sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
-                                                <b>{product.name}</b>
-                                            </Typography>
-                                            
-                                            <Typography sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
-                                            <b><span>&#8377;</span>{product.price}</b>
-                                            </Typography>
-                                        </div>
-                                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                                        
-                                            {product.description}
-                                            </Typography>
+                                    <Card sx={{ width: 350 , height : 450}} className="cardBody">
+                                        <CardContent >
+                                        <img src={product.imageURL} alt = {product.imageURL} width = "350" height = "175"></img>
+                                        <p id="hiddenProdId">{product.productId}</p>
+                                        {/* <div clasName="content"> */}
+                                            <div id="prodTitle">
+                                                <Typography  style={{wordWrap : "true"}} sx={{ fontSize: 18 }} color="text.secondary" gutterBottom>
+                                                    <b id="productName">{product.name}</b>
+                                                </Typography>
+                                                
+                                                <Typography sx={{ fontSize: 18 }} color="text.secondary" gutterBottom>
+                                                <b><span>&#8377;</span>{product.price}</b>
+                                                </Typography>
+                                            </div>
+                                                <Typography className="content" sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                                                    {product.description}
+                                                </Typography>
+                                        {/* </div> */}
                                         </CardContent>
-                                        <div id="cardFooter">
-                                            <CardActions id="cardButton">
-                                                <Button size="small" variant="contained" onClick = {() => callProdDetails(product.productId)}>Buy</Button>
-                                            </CardActions>
+                                        <div className="cardFooter">
+                                            {/* <CardActions className="cardFooter"> */}
+                                                <div id = "commonButton"> 
+                                                    <Button size="small" variant="contained" onClick = {() => callProdDetails(product.productId)}>Buy</Button>
+                                                </div>
+                                                { adminShowStore ?
+                                                    <div id="adminButtons">
+                                                        <IconButton aria-label="edit" onClick={openModifyPage}>
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                        <IconButton aria-label="delete" onClick={handleDialogClickOpen}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </div>
+                                                    : null
+                                                }
+                                            {/* </CardActions> */}
                                         </div>
                                     </Card>
                                
@@ -192,6 +386,91 @@ function Products(props){
                     </Grid>
                 </Box>
             </div> {/* Grid ending */}
+             {/*Snackbar for order completion */}
+             {orderPlacedShowStore ?
+             <div>
+                <Snackbar sx={{width : '10'}}
+                    anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                    }}
+                    open={openOrder}
+                    onClose={handleCloseOrder}
+                    key={verticalOrder + horizontalOrder}
+                    // autoHideDuration={6000}
+                >
+                    <SnackbarContent sx={{ backgroundColor: "green", color : "white"}}
+                        message="Order placed successfully!"
+                        action = {actionOrder}>
+                    </SnackbarContent>
+                </Snackbar>
+            </div> :null
+             }
+             {/**Block of code for opening the dialog box before product deletion */}
+             <div>
+                <Dialog open={dialogDeleteOpen} onClose={handleDialogClose}>
+                    <DialogTitle>Confirm Deletion Of Product!</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Are you sure you want to delete the product?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleDeletion}>OK</Button>
+                        <Button onClick={handleDialogClose}>CANCEL</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+
+            {/*Snackbar for product deletion */}
+             <div>
+                <Snackbar sx={{width : '10'}}
+                    anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                    }}
+                    open={deleteProd}
+                    onClose={handleCloseProdDelete}
+                    key={verticalDeleteProd + horizontalDeleteProd}
+                    // autoHideDuration={6000}
+                >
+                    {
+                    snackBarShow ?
+                    <SnackbarContent sx={{ backgroundColor: "green", color : "white"}}
+                        message={productNameToBeDeleted}
+                        action = {actionProductDelete} >
+                    </SnackbarContent>
+                    :
+                    <SnackbarContent sx={{ backgroundColor: "green", color : "white"}}
+                        message={productNameToBeDeleted}
+                        action = {actionProductDelete} >
+                    </SnackbarContent>
+                    }
+                </Snackbar>
+            </div> 
+
+            {/*Snackbar for product modification */}
+            {productModified ?
+            <div>
+                <Snackbar sx={{width : '10'}}
+                    anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                    }}
+                    open={openModifyProd}
+                    onClose={handleModifyProdClose}
+                    key={verticalModify + horizontalModify}
+                    // autoHideDuration={6000}
+                >
+                    <SnackbarContent sx={{ backgroundColor: "green", color : "white"}}
+                        message={productModifiedName}
+                        action = {actionModifyProd} >
+                    </SnackbarContent>
+                    
+                </Snackbar>
+            </div>
+             : null
+            }
         </div>//main div ending
     );
 };

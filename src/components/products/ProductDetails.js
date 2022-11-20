@@ -12,22 +12,24 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import { useDispatch, useSelector } from "react-redux";
-import { dataActions } from '../../common/dataSlice';
+// import { dataActions } from '../../common/dataSlice';
 import ProductCategories from '../../common/ProductCategories';
+import { QUANTITY } from '../../common/dataSlice';
 
 
 function ProductDetails(props){
     //The below state variable is setup for the toggle button
     const [prodDetails,setProdDetails]  = useState([]);
-    const [quantity, setQuantity]       = useState('');
+    // const [quantity, setQuantity]       = useState(0);
 
-    const selector = useSelector(state => state.dataSliceReducer);
+    // const selector = useSelector(state => state.dataSliceReducer);
     const dispatch = useDispatch();
-
+    const quantityCheck = useSelector((state) => state.orderQuantity);
+    console.log("product details",quantityCheck);
 
     const handleQuantityChange = (event) => {
-        setQuantity(event.target.value);
-        dispatch(dataActions.QUANTITY(event.target.value));
+        // setQuantity(event.target.value);
+        dispatch(QUANTITY(event.target.value));
     }
 
     
@@ -82,7 +84,7 @@ function ProductDetails(props){
                         <Grid item>
                             <Card sx={{ width: 500 , height : 500}}>
                                 <CardContent>
-                                    <div >
+                                    <div>
                                     <div id="firstPart">
                                         <Typography style={{wordWrap : "false"}} sx={{ fontSize: 24 }} gutterBottom>
                                             <b>{prodDetails.name} </b> 
@@ -107,7 +109,7 @@ function ProductDetails(props){
                                             required
                                             id="outlined-multiline-flexible"
                                             label="Enter Quantity"
-                                            value={quantity}
+                                            value={quantityCheck}
                                             onChange={handleQuantityChange}
                                             />
                                         <br></br> <br></br>

@@ -1,6 +1,14 @@
 #stepper{
     margin : 5%;
+    margin-bottom: 1%;
 }
+
+.gridMui{
+    margin-left : 14%;
+    margin-bottom: 0%;
+}
+
+
 
 .select{
     position : absolute;

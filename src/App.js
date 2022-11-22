@@ -7,6 +7,7 @@ import ProductDetails from './components/products/ProductDetails';
 import Order from './components/orders/Order';
 import Home from './components/home/Home';
 import ModifyProduct from './components/products/ModifyProduct';
+import AddProduct from './components/products/AddProduct';
 
 export default function App() {
   let baseUrl = "http://localhost:8085/";
@@ -21,6 +22,7 @@ export default function App() {
                 <Route path = "/products/:id" element = {<ProductDetails baseUrl={baseUrl}/>} />
                 <Route path = "/order" element = {<Order baseUrl={baseUrl}/>} />
                 <Route path = "/modify/:id" element = {<ModifyProduct baseUrl = {baseUrl} />} />
+                <Route path = "/add" element = {<AddProduct baseUrl = {baseUrl} />} /> 
             </Routes>
       </Router>
     </div>

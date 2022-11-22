@@ -1,8 +1,12 @@
+//This is being built as part of Capstone project.
+//dataSlice.js is a centralized store for storing the state objects state and reducer functions to modify the existing state values
+//Created by : Sanju Jiji
+
 import { createSlice } from '@reduxjs/toolkit'
 
 export const dataSlice = createSlice({
-    name: 'menuDisplay',
-    initialState: {
+    name : 'menuDisplay',
+    initialState : {
         loginShow           : true,
         logoutShow          : false,
         signUpShow          : true,
@@ -10,15 +14,14 @@ export const dataSlice = createSlice({
         addProductShow      : false,
         searchBarShow       : false,
         searchBarValue      : "",
-        // prodDetails         : {},
         categorySelected    : 'all',
         orderQuantity       : 0,
         adminBtnShow        : false,
         orderPlaced         : false,
         productModified     : false,
         productModifiedName : ""
-
     },
+
     reducers: {
         LOGINSHOW : (state , action) => {
             state.loginShow = action.payload;
@@ -41,9 +44,6 @@ export const dataSlice = createSlice({
         SEARCHBARVALUE : (state,action)  => {
             state.searchBarValue = action.payload;
         },
-        // PRODDETAILS :  (state,action)  => {
-        //     state.prodDetails = action.payload;
-        // },
         PRODUCTCATEGORYSELECTED : (state,action)  => {
             state.categorySelected = action.payload;
         },
@@ -68,6 +68,5 @@ export const dataSlice = createSlice({
 
 export const {
     LOGINSHOW,LOGOUTSHOW,SIGNUPSHOW,HOMESHOW,ADDPRODUCTSHOW,SEARCHBARSHOW,SEARCHBARVALUE,PRODUCTCATEGORYSELECTED,QUANTITY,ADMINSHOW,ORDERPLACEDSHOW,PRODUCTMODIFIEDSHOW,PRODUCTMODIFIEDNAMESHOW} = dataSlice.actions
-// export const dataActions = dataSlice.actions
 
 export default dataSlice.reducer;

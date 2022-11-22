@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 // import { dataActions } from '../../common/dataSlice';
 import ProductCategories from '../../common/ProductCategories';
 import { QUANTITY } from '../../common/dataSlice';
+import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 
 
 function ProductDetails(props){
@@ -32,7 +33,14 @@ function ProductDetails(props){
         dispatch(QUANTITY(event.target.value));
     }
 
-    
+    const checkQuantity = () =>{
+        if (quantityCheck < 1){
+            return false;
+        }
+        else {
+            window.location.href="/order";
+        }
+    }
     //This code is to load the product details
     useEffect(() => {
         loadProdDetails();
@@ -107,15 +115,18 @@ function ProductDetails(props){
                                         <br></br>
                                         <TextField
                                             required
+                                            error
                                             id="outlined-multiline-flexible"
                                             label="Enter Quantity"
+                                            helperText="Quantity must be greater than 0"
                                             value={quantityCheck}
                                             onChange={handleQuantityChange}
                                             />
+                                            
                                         <br></br> <br></br>
-                                        <Button variant="contained" href="/order">
+                                        <Button variant="contained" onClick = {checkQuantity} href="#">
                                             Place Order
-                                        </Button>   
+                                        </Button> 
                                     </div>
                                 </CardContent>
                             </Card>

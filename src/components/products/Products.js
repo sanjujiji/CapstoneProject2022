@@ -31,14 +31,18 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import {PRODUCTMODIFIEDSHOW,PRODUCTMODIFIEDNAMESHOW,QUANTITY} from '../../common/dataSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPencil,faTrashCan } from '@fortawesome/free-solid-svg-icons'
+// import 'font-awesome/css/font-awesome.min.css';
 
 function Products(props){
     
-    const [sortBy, setSortBy]                       = useState('');
-    const [products,setProducts]                    = useState([]);
-    const [dialogDeleteOpen,setDialogDeleteOpen]    = useState(false);
-    const [productNameToBeDeleted,setProductNameToBeDeleted] = useState("");
-    const [snackBarShow,setSnackBarShow] = useState(true);
+    const [sortBy, setSortBy]                                   = useState('');
+    const [products,setProducts]                                = useState([]);
+    const [dialogDeleteOpen,setDialogDeleteOpen]                = useState(false);
+    const [productNameToBeDeleted,setProductNameToBeDeleted]    = useState("");
+    const [snackBarShow,setSnackBarShow]                        = useState(true);
 
     const categorySelected = useSelector(state => state.categorySelected);
     const searchBarValue = useSelector(state => state.searchBarValue);
@@ -47,7 +51,7 @@ function Products(props){
     const productModified = useSelector(state => state.productModified);
     const productModifiedName = useSelector(state => state.productModifiedName);
     const dispatch = useDispatch();
-
+    dispatch(QUANTITY(0));
     console.log("productModified",productModified);
 
     //for displaying the Order placed snackbar
@@ -191,17 +195,26 @@ function Products(props){
             setDialogDeleteOpen(false);
           };
 
-          const handleDeletion = () => {
+          const handleDeletion = (e) => {
             console.log("in handleDeletion");
-            deleteSelectedProduct();
+            deleteSelectedProduct(e.currentTarget.getAttribute("value1"));
             handleDialogClose();
           }
 
-          const openModifyPage = () => {
+          const openModifyPage = (e) => {
             console.log("in open modify");
-            window.location.href = "/modify/"+ document.body.querySelector("#hiddenProdId").innerHTML;
+            // e.preventDefault();
+            console.log(e.currentTarget.getAttribute("value1"));
+            // console.log("ele",ele);
+            dispatch(PRODUCTMODIFIEDSHOW(false));
+            dispatch(PRODUCTMODIFIEDNAMESHOW(""));
+            // console.log(document.body.querySelectorAll("#hiddenProdId"));
+            // console.log(document.getElementById(id).value);
+            // console.log("event",event);
+            window.location.href = "/modify/"+ e.currentTarget.getAttribute("value1");
           }
 
+          
         //function to bring the products from the database
         const loadProducts = () =>{
             console.log("loadProducts");
@@ -266,9 +279,9 @@ function Products(props){
 
     //function to delete a product
     
-    const deleteSelectedProduct = () =>{
+    const deleteSelectedProduct = (prodId) =>{
         const data = null;
-        var productIdToDelete = document.body.querySelector("#hiddenProdId").innerHTML;
+        var productIdToDelete = prodId;
         setProductNameToBeDeleted("Product "+document.body.querySelector("#productName").innerHTML+" deleted successfully!");
         // const emailIdOfLogin = sessionStorage.getItem("emailid")
         let xhrDeleteProduct = new XMLHttpRequest();
@@ -344,8 +357,9 @@ function Products(props){
                                     {/* <Item><img src={product.imageURL} alt = {product.imageURL} width = "100" height = "100"></img></Item> */}
                                     <Card sx={{ width: 350 , height : 450}} className="cardBody">
                                         <CardContent >
-                                        <img src={product.imageURL} alt = {product.imageURL} width = "350" height = "175"></img>
-                                        <p id="hiddenProdId">{product.productId}</p>
+                                        <div id = "image">
+                                        <img src={product.imageURL}  alt = {product.imageURL} width = "250" height = "175"></img>
+                                        </div>
                                         {/* <div clasName="content"> */}
                                             <div id="prodTitle">
                                                 <Typography  style={{wordWrap : "true"}} sx={{ fontSize: 18 }} color="text.secondary" gutterBottom>
@@ -362,22 +376,22 @@ function Products(props){
                                         {/* </div> */}
                                         </CardContent>
                                         <div className="cardFooter">
-                                            {/* <CardActions className="cardFooter"> */}
                                                 <div id = "commonButton"> 
                                                     <Button size="small" variant="contained" onClick = {() => callProdDetails(product.productId)}>Buy</Button>
                                                 </div>
-                                                { adminShowStore ?
-                                                    <div id="adminButtons">
-                                                        <IconButton aria-label="edit" onClick={openModifyPage}>
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                        <IconButton aria-label="delete" onClick={handleDialogClickOpen}>
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </div>
-                                                    : null
-                                                }
-                                            {/* </CardActions> */}
+                                                {adminShowStore ?
+                                                <div id="adminButton">
+                                                    {/* <Button size="small" value = {product.productId} onClick={openModifyPage}> <FontAwesomeIcon icon={faPencil}  value = {product.productId} onClick={openModifyPage}/></Button> */}
+                                                   
+                                                    <IconButton value1 = {product.productId} onClick={openModifyPage} aria-label="menu" data-cy="edit-settings">
+                                                    <EditIcon /> 
+                                                    </IconButton>
+                                                    
+                                                    <IconButton value1 = {product.productId} onClick={handleDeletion} aria-label="menu" data-cy="edit-settings">
+                                                    <DeleteIcon /> 
+                                                    </IconButton>
+                                                </div>
+                                                :null}
                                         </div>
                                     </Card>
                                
@@ -397,7 +411,7 @@ function Products(props){
                     open={openOrder}
                     onClose={handleCloseOrder}
                     key={verticalOrder + horizontalOrder}
-                    // autoHideDuration={6000}
+                    autoHideDuration={6000}
                 >
                     <SnackbarContent sx={{ backgroundColor: "green", color : "white"}}
                         message="Order placed successfully!"
@@ -432,7 +446,7 @@ function Products(props){
                     open={deleteProd}
                     onClose={handleCloseProdDelete}
                     key={verticalDeleteProd + horizontalDeleteProd}
-                    // autoHideDuration={6000}
+                    autoHideDuration={6000}
                 >
                     {
                     snackBarShow ?
@@ -460,7 +474,7 @@ function Products(props){
                     open={openModifyProd}
                     onClose={handleModifyProdClose}
                     key={verticalModify + horizontalModify}
-                    // autoHideDuration={6000}
+                    autoHideDuration={6000}
                 >
                     <SnackbarContent sx={{ backgroundColor: "green", color : "white"}}
                         message={productModifiedName}

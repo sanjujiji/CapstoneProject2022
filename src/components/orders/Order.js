@@ -1,7 +1,8 @@
 //This is being built as part of Capstone project.
 //AddOrders.js contains all the functionailities with respect to the product order
+//Created By : Sanju Jiji
 
-import React ,  {useState,useEffect,Fragment} from 'react';
+import React ,  { useState,useEffect,Fragment } from 'react';
 import Header from '../../common/header/Header';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
@@ -13,7 +14,6 @@ import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import './Order.css';
 import InputLabel from '@mui/material/InputLabel';
@@ -23,42 +23,31 @@ import Select from '@mui/material/Select';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import { useDispatch, useSelector } from "react-redux";
-// import { dataActions } from '../../common/dataSlice';
-import { QUANTITY } from '../../common/dataSlice';
 import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import {ORDERPLACEDSHOW} from '../../common/dataSlice';
+import { ORDERPLACEDSHOW } from '../../common/dataSlice';
 
-//Below styling is for the grid
-const Item = styled(Paper)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-    ...theme.typography.body2,
-    padding: theme.spacing(1),
-    textAlign: 'center',
-    color: theme.palette.text.secondary,
-  }));
-
-  let theme = createTheme({
-    spacing : 4,
-  });
+    //Below styling is for spacing between form elements
+    let theme = createTheme({
+        spacing : 4,
+    });
   
-  theme = createTheme(theme,{
-    typography: {
-      body1 : {
+    theme = createTheme(theme,{
+        typography: {
+        body1 : {
         margin : theme.spacing(1),
       }
     },
-  }); 
+    }); 
   
- 
+    //Below is required for the stepper parts
+    const steps = ["Items","Select Address","Confirm Order"];
 
-const steps = ["Items","Select Address","Confirm Order"];
-
-
- 
 function Order(props){
+
+    //Below are the list of local state objects for storing the different states of the form elements
     const [activeStep, setActiveStep]       =   useState(0);
     const [selectAdd, setSelectAdd]         =   useState("");
     const [street,setStreet]                =   useState("");
@@ -71,29 +60,26 @@ function Order(props){
     const [prodDetails,setProdDetails]      =   useState({});
     const [savedAddrObj,setSavedAddrObj]    =   useState([]);
     const [selectedAddrObj,setSelectedAddrObj] = useState({});
+    
     const [state, setState] = useState({
         open: false,
         vertical: 'top',
         horizontal: 'right'
       });
-    //   const [orderState, setOrderState] = useState({
-    //     openOrder: false,
-    //     verticalOrder: 'top',
-    //     horizontalOrder: 'right'
-    //   });
         
-      const {vertical, horizontal, open } = state;
-    //   const {openOrder,verticalOrder,horizontalOrder} = orderState;
-
+    const {vertical, horizontal, open } = state;
+    
     const quantity = useSelector((state) => state.orderQuantity);
     const dispatch = useDispatch();
       
     //loads the details of the product from the session storage variable
     useEffect(() => {
+        //Details of the product from the product details screen has been stored as a session variable to use the same for order display
         var dtls = JSON.parse(sessionStorage.prodDetails);
         setProdDetails(dtls);
     },[]);
 
+    //loads the saved addresses of the user from the database
     useEffect(() => {
         loadAddress();  
     },[]);
@@ -101,31 +87,30 @@ function Order(props){
     /*Stepper functions*/
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        document.getElementById("errorMsg").innerText = "";
     };
 
+    //Below function is for handling the different phases of the stepper when the next button is clicked
     const handleNext = () => {
-        console.log("activeStep",activeStep,"selectAdd",selectAdd);
-        if ((activeStep == 1) && (selectAdd == "")){
-            console.log("in if");
+        document.getElementById("errorMsg").innerText = "";
+        if ((activeStep === 1) && (selectAdd === "")) {
             handleClick({
-                vertical: 'top',
-                horizontal: 'right'
+                vertical    : 'top',
+                horizontal  : 'right'
               })
         }
-        else if ((activeStep == 1)){
+        else if ((activeStep === 1)){
             loadSelectedAddress();
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
         }
         else if ((activeStep == 2)){
             addNewOrder();
-            // setActiveStep((prevActiveStep) => prevActiveStep + 1);
         }
         else
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
 
-      //Below listed functions are for setting the different state variables
-
+    //Below listed functions are for setting the different state variables
     const handleAddrChange = (event) => {
         setSelectAdd(event.target.value);
     }
@@ -146,7 +131,6 @@ function Order(props){
         setStateNew(event.target.value);
     }
     
-
     const landmarkChangeHandler = (event) => {
         setLandmark(event.target.value);
     }
@@ -159,78 +143,52 @@ function Order(props){
         setContactNo(event.target.value);
     }
     
-    
-    
-      //Below functions are for handling of the snackbar
-      const handleClick = () => {
+    //Below functions are for handling of the snackbar for the mandatory address
+    const handleClick = () => {
         setState({ ...state, open: true });
-      };
+    };
     
-      const handleClose = () => {
+    const handleClose = () => {
         setState({ ...state, open: false });
-      };
+    };
 
-    //   const handleClickOrder = () => {
-    //     setOrderState({ ...orderState , openOrder: true });
-    //   };
-    
-    //   const handleCloseOrder = () => {
-    //     setOrderState({ ...orderState, openOrder: false });
-    //   };
-
-      const action = (
-        <React.Fragment>
-          <IconButton
-            size="small"
-            aria-label="close"
-            color="inherit"
-            onClick={handleClose}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </React.Fragment>
+    const action = (
+        <Fragment>
+            <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={handleClose}
+            >
+                <CloseIcon fontSize="small" />
+            </IconButton>
+        </Fragment>
       );
 
-    //   const actionOrder = (
-    //     <React.Fragment>
-    //       <IconButton
-    //         size="small"
-    //         aria-label="close"
-    //         color="inherit"
-    //         onClick={handleCloseOrder}
-    //       >
-    //         <CloseIcon fontSize="small" />
-    //       </IconButton>
-    //     </React.Fragment>
-    //   );
-
-        //function to filter out the selected address
-        const loadSelectedAddress = () => {
-            console.log("savedAddrObj",savedAddrObj,"selectAdd",selectAdd);
+    //function to filter out the selected address
+    const loadSelectedAddress = () => {
             const savedAddress = savedAddrObj.filter((el) => el.addressId === selectAdd);
             setSelectedAddrObj(savedAddress[0]);
-            console.log("saved",savedAddress);
-            console.log("state obj",selectedAddrObj);
         };
 
     //function to bring the address details from the database
     const loadAddress = () =>{
+        
         const data = null;
         const emailIdOfLogin = sessionStorage.getItem("emailid")
+        
         let xhrloadAddress = new XMLHttpRequest();
         let addressNew = [];
         xhrloadAddress.addEventListener("readystatechange", function () {
-            if ((xhrloadAddress.readyState === 4) && (xhrloadAddress.status === 200) ) {
+            if ((xhrloadAddress.readyState === 4) && (xhrloadAddress.status === 200)) {
                 addressNew = JSON.parse(xhrloadAddress.responseText);
                 setSavedAddrObj(addressNew.content);
-                console.log(addressNew.content);
             }
-            else if (xhrloadAddress.status !== 200) {
+            else if ((xhrloadAddress.readyState === 4) && (xhrloadAddress.status !== 200)) {
                 addressNew = [];
                 setSavedAddrObj(addressNew);
             }
     });
-        console.log(props.baseUrl);
         xhrloadAddress.open("GET", props.baseUrl + "address?emailid="+emailIdOfLogin,true);
         xhrloadAddress.setRequestHeader("Authorization",sessionStorage.getItem('x-auth-token'));
         xhrloadAddress.setRequestHeader('Content-type', 'application/json');
@@ -240,83 +198,76 @@ function Order(props){
     //Below function is to add new addresses
     const addNewAddress = () => {
         document.getElementById("errorMsg").innerText = "";
-            let addressData = JSON.stringify({
-                "name"          :   name,
-                "street"        :   street,
-                "city"          :   city,
-                "state"         :   state,
-                "landmark"      :   landmark,
-                "zipCode"       :   zipCode,
-                "phoneNo"       :   contactNo
-            });
-            console.log(addressData);
-            let xhrAddAddress = new XMLHttpRequest();
-            xhrAddAddress.addEventListener("readystatechange", function () {
-                if ((xhrAddAddress.readyState === 4) && (xhrAddAddress.status == 200) ) {
-                    //loadAddress is being called to populate the drop down with the newly added address
-                    loadAddress();
-                    //reset the address fields
-                    setStreet("");
-                    setName("");
-                    setCity("");
-                    setState("");
-                    setLandmark("");
-                    setContactNo("");
-                    setZipCode("");
-                }
-                else if (xhrAddAddress.status !== 200) {
-                    //return the error message
-                    console.log(xhrAddAddress.responseText);
-                    if (JSON.parse(xhrAddAddress.responseText).message != undefined)
-                        document.getElementById("errorMsg").innerText = JSON.parse(xhrAddAddress.responseText).message;
+        let addressData = JSON.stringify({
+            "name"          :   name,
+            "street"        :   street,
+            "city"          :   city,
+            "state"         :   state,
+            "landmark"      :   landmark,
+            "zipCode"       :   zipCode,
+            "phoneNo"       :   contactNo
+        });
+        let xhrAddAddress = new XMLHttpRequest();
+        xhrAddAddress.addEventListener("readystatechange", function () {
+        if ((xhrAddAddress.readyState === 4) && (xhrAddAddress.status === 200)) {
+                //loadAddress is being called to populate the drop down with the newly added address
+                loadAddress();
+                
+                //reset the address fields of the state objects for the next address usage
+                setStreet("");
+                setName("");
+                setCity("");
+                setState("");
+                setLandmark("");
+                setContactNo("");
+                setZipCode("");
+        }
+        else if ((xhrAddAddress.readyState === 4) && (xhrAddAddress.status !== 200)) {
+                //return the error message
+                if (JSON.parse(xhrAddAddress.responseText).message != undefined)
+                    document.getElementById("errorMsg").innerText = JSON.parse(xhrAddAddress.responseText).message;
                 }
         });
-        console.log(sessionStorage.getItem('x-auth-token'));
         xhrAddAddress.open("POST", props.baseUrl + "addresses",true);
         xhrAddAddress.setRequestHeader("Authorization", sessionStorage.getItem('x-auth-token'));
         xhrAddAddress.setRequestHeader('Content-type', 'application/json');
         xhrAddAddress.send(addressData);
-    
-}
+    }
 
     //Below function is to add new order
     const addNewOrder = () => {
-        // document.getElementById("errorMsg").innerText = "";
-            let orderData = JSON.stringify({
-                "productId"     :   prodDetails.productId,
-               "addressId"      :   selectedAddrObj.addressId,
-                "quantity"      :   quantity
-            });
-            console.log("orderdata",orderData);
-            let xhrAddOrder = new XMLHttpRequest();
-            xhrAddOrder.addEventListener("readystatechange", function () {
-                if ((xhrAddOrder.readyState === 4) && (xhrAddOrder.status == 200) ) {
-                    dispatch(ORDERPLACEDSHOW(true));
-                    window.location.href="/products";
-                    
-                    
-                    
-                }
-                else if (xhrAddOrder.status !== 200) {
-                    //return the error message
-                    console.log(xhrAddOrder.responseText);
+        
+        document.getElementById("errorMsg").innerText = "";
+        let orderData = JSON.stringify({
+            "productId" :   prodDetails.productId,
+            "addressId" :   selectedAddrObj.addressId,
+            "quantity"  :   quantity
+        });
+
+        let xhrAddOrder = new XMLHttpRequest();
+        xhrAddOrder.addEventListener("readystatechange", function () {
+            if ((xhrAddOrder.readyState === 4) && (xhrAddOrder.status === 200)) {
+                //After successful placing of order user will be diverted back to the products page
+                dispatch(ORDERPLACEDSHOW(true));
+                window.location.href="/products";  
+            }
+            else if ((xhrAddOrder.readyState === 4) && (xhrAddOrder.status !== 200)) {
                     if (JSON.parse(xhrAddOrder.responseText).message != undefined)
                         document.getElementById("errorMsg").innerText = JSON.parse(xhrAddOrder.responseText).message;
                 }
         });
-        console.log(sessionStorage.getItem('x-auth-token'));
+        
         xhrAddOrder.open("POST", props.baseUrl + "orders",true);
         xhrAddOrder.setRequestHeader("Authorization", sessionStorage.getItem('x-auth-token'));
         xhrAddOrder.setRequestHeader('Content-type', 'application/json');
         xhrAddOrder.send(orderData);
-    
-}
-
+    }
     return(
         <div>
             <header>
                 <Header />
-            </header>    
+            </header>  
+             
             {/*The below piece of code is for setting up of stepper */}
             <div id="stepper">
                 <Box sx={{ width: '100%' }}>
@@ -524,7 +475,7 @@ function Order(props){
                         <Button variant="contained" sx={{width: { sm: 200, md: 300 }}} onClick={addNewAddress}>SAVE ADDRESS</Button>
                         <br/><br/>
                     </div>{/*End of inner div */}
-                    <p id="errorMsg"></p>
+                    
                 </div>
                 
                 : null }
@@ -650,8 +601,9 @@ function Order(props){
                     </SnackbarContent>
                 </Snackbar>
             </div>
-
-           
+            <div id="errorMsgDiv">
+                <p id="errorMsg"></p>
+            </div>
         </div> //end of main div
     );
 }

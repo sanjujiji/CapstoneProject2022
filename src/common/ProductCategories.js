@@ -1,72 +1,69 @@
-import React , {useState,useEffect} from 'react';
+import React , { useState,useEffect } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import '../components/products/Products.css';
 import { useDispatch, useSelector } from "react-redux";
-// import { useDispatch } from "react-redux";
-// import { dataActions } from '../common/dataSlice';
 import { PRODUCTCATEGORYSELECTED } from '../common/dataSlice';
   
 function ProductCategories(props){
-    //The below state variable is setup for the toggle button
-    // const [categorySelected, setCategorySelected]   = useState(() => 'all');
+    
+    //Below state object is for storing the product categories
     const [productCategories,setProductCategories]  = useState([]);
 
-    // const selector = useSelector(state => state.dataSliceReducer);
     const dispatch = useDispatch();
-    // const selector = useSelector(state => state.dataSliceReducer);
+    
+    //Below is for retrieving the selected category to retrieve the list of product categories from the database
     const categorySelected = useSelector((state) => state.categorySelected);
 
+    //This function will dispatch the category selected to the store
     const handleChange = (event) => {
         dispatch(PRODUCTCATEGORYSELECTED(event.target.value));
-        console.log('store value',categorySelected);
-        if (window.location.href != "http://localhost:3000/products" ){
+        //This code has been written for redirecting from details to the products page or on the products page
+        let hrefLocation = "http://localhost:"+window.location.port+"/products";
+        if (window.location.href != hrefLocation){
             window.location.href = '/products/';
         }
       };
 
-        //This code is to load the product categories
-        useEffect(() => {
+    //This code is to load the product categories
+    useEffect(() => {
             loadCategories();
-        },[]);       
+    },[]);       
 
-        //function to bring the product categories from the database
-        const loadCategories = () =>{
-            const data = null;
+    //function to bring the product categories from the database
+    const loadCategories = () => {
+            
+        const data = null;
 
-            let xhrloadCategories = new XMLHttpRequest();
-            let prodCat ;
-            xhrloadCategories.addEventListener("readystatechange", function () {
-                if ((xhrloadCategories.readyState === 4) && (xhrloadCategories.status === 200) ) {
-                    prodCat = JSON.parse(xhrloadCategories.responseText);
-                    setProductCategories(prodCat);   
-                    // dispatch(dataActions.PRODUCTCATEGORIES(prodCat));
-                }
-                else if (xhrloadCategories.status !== 200) {
-                    setProductCategories([]);
-                    // dispatch(dataActions.PRODUCTCATEGORIES([]));
-                }
+        let xhrloadCategories = new XMLHttpRequest();
+        let prodCat ;
+        xhrloadCategories.addEventListener("readystatechange", function () {
+            if ((xhrloadCategories.readyState === 4) && (xhrloadCategories.status === 200)) {
+                prodCat = JSON.parse(xhrloadCategories.responseText);
+                setProductCategories(prodCat);   
+            }
+            else if ((xhrloadCategories.readyState === 4) && (xhrloadCategories.status !== 200)) {
+                setProductCategories([]);
+            }
         });
         xhrloadCategories.open("GET", props.baseUrl + "products/categories",true);
         xhrloadCategories.setRequestHeader('Content-type', 'application/json');
         xhrloadCategories.send(data);
       }
-
-    
     return(
         <div> 
             <div id = "toggle">
                 <ToggleButtonGroup 
-                    color="primary"
-                    value={categorySelected}
+                    color = "primary"
+                    value = {categorySelected}
                     exclusive
-                    onChange={handleChange}
-                    aria-label="Platform"
+                    onChange = {handleChange}
+                    aria-label = "Platform"
                     >
-                        <ToggleButton value="all">All</ToggleButton>
-                        {/*The below code is for dynamically populating the categories */}
-                            {productCategories.map((category) => (
-                                <ToggleButton value={category}>{category}</ToggleButton> 
+                    <ToggleButton value = "all">All</ToggleButton>
+                    {/*The below code is for dynamically populating the categories */}
+                        {productCategories.map((category) => (
+                            <ToggleButton value={category}>{category}</ToggleButton> 
                          ))}        
                 </ToggleButtonGroup>
             </div> {/* end of div id toggle */}     

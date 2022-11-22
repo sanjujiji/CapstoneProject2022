@@ -1,3 +1,7 @@
+//This is being built as part of Capstone project.
+//Store.js is a centralized persist store for storing the state objects 
+//Created by : Sanju Jiji
+
 import { configureStore } from '@reduxjs/toolkit';
 import dataSlice from './dataSlice';
 import {
@@ -10,21 +14,23 @@ import {
     PURGE,
     REGISTER,
 } from 'redux-persist';
+
 import storage from 'redux-persist/lib/storage';
+
 const persistConfig = {
-    key: 'root',
-    version: 1,
+    key : 'root',
+    version : 1,
     storage,
 };
 
 const persistedReducer = persistReducer(persistConfig, dataSlice);
 
 const store = configureStore({
-         reducer: persistedReducer,
-            middleware: (getDefaultMiddleware) =>
+         reducer : persistedReducer,
+            middleware : (getDefaultMiddleware) =>
                 getDefaultMiddleware({
-            serializableCheck: {
-                ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+            serializableCheck : {
+                ignoredActions : [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
             },
         }),
 });

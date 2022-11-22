@@ -1,12 +1,13 @@
 //This is being built as part of Capstone project.
-//Login.js contains all the functionailities with respect to the login
+//Signup.js contains all the functionailities with respect to Signup
+//Created By : Sanju Jiji
+
 import React , {useState} from 'react';
 import '../header/Signup.css';
 import Header from './Header';
 import { withStyles } from "@material-ui/core/styles";
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import Icon from '@mui/material/Icon';
 import TextField from '@mui/material/TextField';
@@ -14,15 +15,16 @@ import Button from '@mui/material/Button';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from "react-redux";
-// import { dataActions } from '../dataSlice';
 import { LOGINSHOW,LOGOUTSHOW,SIGNUPSHOW,HOMESHOW,SEARCHBARSHOW,ADDPRODUCTSHOW } from '../dataSlice';
 
+//for displaying the lock icon
 const RedLockIcon = withStyles({
     root: {
       color: "white"
     }
   })(LockRoundedIcon);
 
+  //for the spacing between the form elements
   let theme = createTheme({
     spacing : 4,
   });
@@ -37,6 +39,8 @@ const RedLockIcon = withStyles({
   
  
 function Signup(props){
+
+    //local state objects for maintaining the states of the different elements in the form
     const [emailId,setEmailId]                      =   useState("");
     const [loginPassword,setLoginPassword]          =   useState("");
     const [firstName,setFirstName]                  =   useState("");
@@ -44,10 +48,10 @@ function Signup(props){
     const [loginCnfPassword,setLoginCnfPassword]    =   useState("");
     const [contactNo,setContactNo]                  =   useState("");
 
-    const selector = useSelector(state => state.dataSliceReducer);
+    // const selector = useSelector(state => state.dataSliceReducer);
     const dispatch = useDispatch();
 
-    //Below listed functions are for setting the different state variables
+    //Below listed functions are for setting the different state objects on user input
     const emailIdChangeHandler = (e) => {
         setEmailId(e.target.value);
     };
@@ -74,10 +78,12 @@ function Signup(props){
 
      //this code will make a database call to make a new sign up registration
      const invokeSignup = () => {
+
+        //for display of successful or failure operations
         document.getElementById("successMsg").innerText="";
         document.getElementById("errorMsg").innerText="";
+        
         //check if password and Confirm password are the same before making the API call
-        console.log(firstName,lastName,loginCnfPassword,loginPassword,emailId,contactNo);
         if(loginPassword != loginCnfPassword){
             document.getElementById("errorMsg").innerText = "Password and Confirm Password are not the same. Please correct!"
             return;
@@ -90,12 +96,12 @@ function Signup(props){
                 "email"             : emailId,
                 "contact_number"    : contactNo
             });
-            console.log(invokeSignUpData);
+            
             let xhrSignUp = new XMLHttpRequest();
             xhrSignUp.addEventListener("readystatechange", function () {
-                if ((xhrSignUp.readyState === 4) && (xhrSignUp.status == 200) ) {
+                if ((xhrSignUp.readyState === 4) && (xhrSignUp.status == 200)) {
                     
-                    //Disable the signup and login links and show the logout button and home button
+                    //After successful signup, gets a redirection to the login page
                     dispatch(LOGINSHOW(true));
                     dispatch(LOGOUTSHOW(false));
                     dispatch(SIGNUPSHOW(false));
@@ -104,9 +110,8 @@ function Signup(props){
                     //redirect to the products page
                     document.getElementById("successMsg").innerText = "You have been successfully registered. Please login to continue!"
                 }
-                else {
+                else if ((xhrSignUp.readyState === 4) && (xhrSignUp.status !== 200)){
                     //return the error message
-                    console.log(xhrSignUp.responseText);
                     if (JSON.parse(xhrSignUp.responseText).message != undefined)
                         document.getElementById("errorMsg").innerText = JSON.parse(xhrSignUp.responseText).message;
                 }
@@ -119,11 +124,12 @@ function Signup(props){
 }
     return(
         <div>
-           
+            {/**displaying the header */}
             <header>
                 <Header />
             </header>
             <br/><br/><br/><br/><br/>
+
             <div className = "signup">
             <br/>
                 <Icon size="large" sx={{backgroundColor:"#EC3B83", border: "4px solid #EC3B83",borderRadius: 50}}>
@@ -132,112 +138,120 @@ function Signup(props){
                     </RedLockIcon>
                 </Icon>    
                 <br /> <br />
-                <InputLabel id="signInLabel">Sign Up</InputLabel>
+
+                {/**Below are the different elements of the Sign up form */}
+                <InputLabel id = "signInLabel">Sign Up</InputLabel>
                 <br></br>
+
                 <ThemeProvider theme={theme}>
-                    <Typography variant="body1" gutterBottom>
+                    <Typography variant = "body1" gutterBottom>
                         <FormControl required>
                             <TextField 
                                 required
-                                value={firstName}
-                                id="outlined-required"
-                                label="First Name"
-                                sx={{width: { sm: 200, md: 300 }}}
-                                onChange={firstNameChangeHandler}
+                                value = {firstName}
+                                id = "outlined-required"
+                                label = "First Name"
+                                sx = {{width: { sm: 200, md: 300 }}}
+                                onChange = {firstNameChangeHandler}
                             />
                         </FormControl>
                     </Typography>
                 </ThemeProvider>
             
-                <ThemeProvider theme={theme}>
-                    <Typography variant="body1" gutterBottom>
+                <ThemeProvider theme = {theme}>
+                    <Typography variant = "body1" gutterBottom>
                         <FormControl required>
                             <TextField 
                                 required
-                                value={lastName}
-                                id="outlined-required"
-                                label="Last Name"
-                                sx={{width: { sm: 200, md: 300 }}}
-                                onChange={lastNameChangeHandler}
+                                value = {lastName}
+                                id = "outlined-required"
+                                label = "Last Name"
+                                sx = {{width: { sm: 200, md: 300 }}}
+                                onChange = {lastNameChangeHandler}
                             />
                         </FormControl>
                     </Typography>
                 </ThemeProvider>        
                 
-                <ThemeProvider theme={theme}>
-                    <Typography variant="body1" gutterBottom>
+                <ThemeProvider theme = {theme}>
+                    <Typography variant = "body1" gutterBottom>
                         <FormControl required>
                             <TextField 
                                 required
-                                value={emailId}
-                                id="outlined-required"
-                                label="Email Address"
-                                sx={{width: { sm: 200, md: 300 }}}
-                                onChange={emailIdChangeHandler}
+                                value = {emailId}
+                                id = "outlined-required"
+                                label = "Email Address"
+                                sx = {{width: { sm: 200, md: 300 }}}
+                                onChange = {emailIdChangeHandler}
                             />
                         </FormControl>
                     </Typography>
                 </ThemeProvider>
                 
-                <ThemeProvider theme={theme}>
-                    <Typography variant="body1" gutterBottom>
+                <ThemeProvider theme = {theme}>
+                    <Typography variant = "body1" gutterBottom>
                         <FormControl required>
                             <TextField
                                 required
-                                value={loginPassword}
-                                id="filled-password-input"
-                                label="Password"
-                                type="password"
-                                autoComplete="current-password"
-                                sx={{width: { sm: 200, md: 300 }}}
-                                onChange={loginPasswordChangeHandler}
+                                value = {loginPassword}
+                                id = "filled-password-input"
+                                label = "Password"
+                                type = "password"
+                                autoComplete = "current-password"
+                                sx = {{width: { sm: 200, md: 300 }}}
+                                onChange = {loginPasswordChangeHandler}
                             />
                         </FormControl>
                     </Typography> 
                 </ThemeProvider>       
                 
-                <ThemeProvider theme={theme}>
-                    <Typography variant="body1" gutterBottom>
+                <ThemeProvider theme = {theme}>
+                    <Typography variant = "body1" gutterBottom>
                         <FormControl required>
                             <TextField
                                 required
-                                value={loginCnfPassword}
-                                id="filled-password-input"
-                                label="Confirm Password"
-                                type="password"
-                                autoComplete="current-password"
-                                sx={{width: { sm: 200, md: 300 }}}
-                                onChange={loginCnfPasswordChangeHandler}
+                                value = {loginCnfPassword}
+                                id = "filled-password-input"
+                                label = "Confirm Password"
+                                type = "password"
+                                autoComplete = "current-password"
+                                sx = {{width: { sm: 200, md: 300 }}}
+                                onChange = {loginCnfPasswordChangeHandler}
                             />
                         </FormControl>
                     </Typography>
                 </ThemeProvider>    
                 
-                <ThemeProvider theme={theme}>
-                    <Typography variant="body1" gutterBottom>
+                <ThemeProvider theme = {theme}>
+                    <Typography variant = "body1" gutterBottom>
                         <FormControl  required>
                             <TextField
                                 required
-                                value={contactNo}
-                                id="filled-password-input"
-                                label="Contact No"
-                                sx={{width: { sm: 200, md: 300 }}}
-                                onChange={contactNoChangeHandler}
+                                type = "number"
+                                value = {contactNo}
+                                id = "outlined-required"
+                                label = "Contact No"
+                                sx = {{width: { sm: 200, md: 300 }}}
+                                onChange = {contactNoChangeHandler}
                             />
                             
-                            <Button onClick={() => invokeSignup()} variant="contained" sx={{width: { sm: 200, md: 300 }}}>SIGN UP</Button>
-                            <a href='/login' id="signInLink">Already have an account? Sign In</a>
+                            <Button onClick = {() => invokeSignup()} variant = "contained" sx = {{width: { sm: 200, md: 300 }}}>SIGN UP</Button>
+                            <a href = '/login' id = "signInLink">Already have an account? Sign In</a>
+
                         </FormControl>
                     </Typography>
-                </ThemeProvider>    
-                    <span id = "errorMsg"></span>
-                    <br></br>
-                    <span id ="successMsg"></span>
-                </div> {/*end of div for the mid part*/}
+                </ThemeProvider> 
+
+                {/**For displaying the error or success message */}
+                <span id = "errorMsg"></span>
+                <br></br>
+                <span id ="successMsg"></span>
+            </div> {/*end of div for the mid part*/}
                
             <footer id = "footer">
                 <span>Copyright &copy; <a href="http://upgrad.com">upGrad</a> 2022</span>
             </footer>
+            
         </div> //end of main div
     );
 }
